@@ -28,7 +28,7 @@ The directory structure within `src/` is also recreated in the working directory
 
 # Minimal configuration
 `kagami` expects a `.kagami/` and a `src/` directory before doing anything, but won't complain if those directories are empty.
-Aside from that, you're free to do whatever you want. An example template is provided so you can get started.
+Aside from that, you're free to do whatever you want. A barebones template is provided so you can get started.
 
 # Macros
 Macro placeholders look like this: `{MACRO}` and can appear anywhere in your markup and are parsed and replaced in-place during the final step.
@@ -48,8 +48,9 @@ There are also per-file specific macros which override user-provided macros and 
 
 When a macro is found, the brackets are removed, the resulting identifier is interpreted as a shell variable and it's contents replace the placeholder text in-place. If the variable is not set, the placeholder is simply removed.
 
-# Motivation
-This script replaced a previous site generator written in GNU make and GNU m4 macro processor. m4 has no concept of escape characters and will happily eat any word that matches a built-in macro, like `divert` and `shift`.
+# Background
+This script replaced a previous generic site generator written in GNU make and GNU m4 macro processor that quickly ballooned in complexity.
+m4 allows you to run inline shell commands similar to PHP but has no concept of escape characters and will happily eat any word that matches a built-in macro, like `divert` and `shift`.
 
 # Installation
 Run `make install` to install to `/usr/local` by default.
@@ -58,7 +59,7 @@ You can change install location with the `PREFIX` variable, eg.
 `make install PREFIX=$HOME/.local`
 
 # Dependencies
-* [cmark-gfm](https://github.com/github/cmark-gfm) - [Github Flavored](https://github.github.com/gfm/) Markdown to HTML conversion
+* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting [Github Flavored](https://github.github.com/gfm/) Markdown to HTML
 	* _Most GNU/Linux distros already package this._
 * any POSIX-compliant shell
 
