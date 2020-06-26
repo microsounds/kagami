@@ -41,7 +41,7 @@ while [ ! -z "$working_dir" ] && [ ! -d "$working_dir/$config" ]; do
 	working_dir="${working_dir%/*}"
 done
 [ ! -z "$working_dir" ] ||
-	quit "Directory '$config' not found in this or any parent dir  up to /"
+	quit "Directory '$config' not found in this or any parent dir up to /"
 
 # shortcuts
 config_dir="$working_dir/$config"
@@ -68,7 +68,7 @@ for f in "${@#-}"; do case "$f" in
 esac; done
 
 # Macro placeholders look like this: '{MACRO}' and can appear anywhere in
-# markup and are parsed/replaced in-place during the final step.
+# your markup and are parsed and replaced in-place during the final step.
 # Global macros come in 2 flavors, the built-in variables, and the
 # user-provided shell variables described in '.kagami/macros' which override
 # built-ins.
@@ -109,7 +109,7 @@ find "$source_dir" -type f -name '*.md' | while read -r orig; do
 		cat "$config_dir/tail.htm" >> "$new"
 
 		# file-specific environment macros
-		HEADING="$(grep '^# ' "$orig" | sed 's/^# //' | head -1)"
+		PAGE_TITLE="$(grep '^# ' "$orig" | sed 's/^# //' | head -1)"
 
 		# When a macro is found, the brackets are removed, the resulting
 		# identifier is interpreted as a shell variable and it's contents
