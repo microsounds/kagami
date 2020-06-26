@@ -1,0 +1,124 @@
+#!/usr/bin/env sh
+
+## kagami v0.2 — static microblog generator
+# Copyright (c) 2020 microsounds <https://github.com/microsounds>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
+
+# environment and error checking
+mode='error'
+mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts
+mesg() { mesg_st "$@"; printf '\n'; }
+quit() { mesg "$@, exiting."; exit 1; }
+
+# dependency checking
+markdown='cmark-gfm'
+which $markdown > /dev/null || quit "$markdown is not installed"
+for f in footnotes table strikethrough autolink; do
+	markdown="$markdown -e $f"
+done
+
+# locating the working directory
+# Any dir or parent thereof that contains the following dirs becomes
+# the working dir, all operations are relative to this dir.
+config='.kagami' # configuration directory
+source='src'     # source markdown documents
+
+working_dir="$PWD"
+while [ ! -z "$working_dir" ] && [ ! -d "$working_dir/$config" ]; do
+	working_dir="${working_dir%/*}"
+done
+[ ! -z "$working_dir" ] ||
+	quit "Directory '$config' not found in this or any parent dir  up to /"
+
+# shortcuts
+config_dir="$working_dir/$config"
+source_dir="$working_dir/$source"
+[ -d "$source_dir" ] ||
+	quit "Markdown documents expected in '$source_dir'"
+
+unset mode # end rudimentary error checking
+
+## usage: kagami [options]
+##  -h          Displays this message.
+##  clean       Recursively deletes all *.htm files in the working directory,
+##              excluding the config directory '.kagami'.
+
+for f in "${@#-}"; do case "$f" in
+	h) cat "$0" | grep '^## ' | sed 's/## //'; exit 1;;
+	clean)
+		find "$working_dir" -type f -name "*.htm" \
+			! -path "$config_dir*" | while read -r file; do
+				( mode='-'; mesg "$file"; )
+				rm "$file"
+			done
+		exit 0;;
+esac; done
+
+# Macro placeholders look like this: '{MACRO}' and can appear anywhere in
+# markup and are parsed/replaced in-place during the final step.
+# Global macros come in 2 flavors, the built-in variables, and the
+# user-provided shell variables described in '.kagami/macros' which override
+# built-ins.
+# There are also per-file specific macros which override user-provided macros
+# and are generated shortly before the parse and replace step.
+
+# valid macro identifiers
+mformat='[A-Za-z0-9_]+'
+
+# global environment macros
+DOC_ROOT="$working_dir"
+
+# import user-provided macros
+[ -f "$config_dir/macros" ] && . "$config_dir/macros"
+
+# converts all markdown documents located in source directory
+# recursively recreates sitemap structure immediately outside of this dir
+find "$source_dir" -type f -name '*.md' | while read -r orig; do
+
+	# rewrite file path to land outside of source dir
+	# strip file extension
+	# create subdirs if they don't exist
+	new="$working_dir/${orig#$source_dir/}"
+	new="${new%.*}.htm"
+	new_dir="${new%/*}"
+	[ -d "$new_dir" ] ||
+		( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
+
+	# create if output file doesn't exist
+	# refresh output file if it's older than the source file
+	if [ ! -f "$new" ] ||
+		[ ! -z "$(find "$orig" -newer "$new" 2> /dev/null)" ]; then
+		( mode='+'; mesg "$new"; )
+
+		# concatenate markup
+		cat "$config_dir/head.htm" > "$new"
+		$markdown < "$orig" >> "$new"
+		cat "$config_dir/tail.htm" >> "$new"
+
+		# file-specific environment macros
+		HEADING="$(grep '^# ' "$orig" | sed 's/^# //' | head -1)"
+
+		# When a macro is found, the brackets are removed, the resulting
+		# identifier is interpreted as a shell variable and it's contents
+		# replace the placeholder text in-place.
+		# If the variable is not set, the placeholder is simply removed.
+		egrep -o "\{$mformat\}" "$new" | sort | uniq | while read -r ext_macro; do
+			int_macro="$(echo "$ext_macro" | egrep -o "$mformat")"
+			eval "int_macro=\${$int_macro}"
+			{ rm "$new"; sed "s,$ext_macro,$int_macro," > "$new"; } < "$new"
+		done
+	fi
+done

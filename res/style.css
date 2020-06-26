@@ -1,0 +1,12 @@
+body {
+	background:
+		url("nightsky.png"), 
+		url("miku.jpg") no-repeat bottom right,
+		linear-gradient(180deg, #044361, #964E9A);
+	background-blend-mode: screen, multiply, normal;
+	background-size: auto, 400px, auto;
+	background-attachment: fixed;
+	font-family: "Liberation Serif", "Times New Roman", serif;
+	color: #FFFFFF;
+	text-shadow: 3px 1px #646464;
+}
