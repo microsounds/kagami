@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-## kagami v0.2 — static microblog generator
+### kagami v0.2 — static microblog processor
 # Copyright (c) 2020 microsounds <https://github.com/microsounds>
 #
 # This program is free software; you can redistribute it and/or
@@ -17,15 +17,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
 
-# environment and error checking
+## rudimentary error checking
 mode='error'
 mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts
 mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting."; exit 1; }
 
-# dependency checking
+# dependencies
 markdown='cmark-gfm'
-command -v "$markdown" > /dev/null || quit "$markdown is not installed"
+command -v "$markdown" > /dev/null || quit "'$markdown' is not installed"
 for f in footnotes table strikethrough autolink; do
 	markdown="$markdown -e $f"
 done
@@ -36,9 +36,9 @@ done
 config='.kagami' # configuration directory
 source='src'     # source markdown documents
 
-# kagami will run only if the 2 dirs described above actually exist,
-# even if they're empty. kagami tries to be fault-tolerant when convenient.
-# Missing files aren't an issue, kagami will only complain about it.
+# Kagami will run only if the 2 dirs described above actually exist,
+# even if they're empty. Kagami tries to be fault-tolerant when convenient.
+# Missing files aren't an issue, Kagami will only complain about it.
 working_dir="$PWD"
 while [ ! -z "$working_dir" ] && [ ! -d "$working_dir/$config" ]; do
 	working_dir="${working_dir%/*}"
@@ -55,15 +55,16 @@ for f in head.htm tail.htm macros; do
 	( mode='!'; [ -f "$config_dir/$f" ] || mesg "Expected '$config_dir/$f'"; )
 done
 
-unset mode # end rudimentary error checking
+unset mode
 
-## usage: kagami [options]
-##  -h          Displays this message.
-##  clean       Recursively deletes all *.htm files in the working directory,
-##              excluding the config directory '.kagami'.
+### usage: kagami [options]
+###  -h          Displays this message.
+###  clean       Recursively deletes all *.htm files in the working directory,
+###              excluding the config directory '.kagami'.
 
-for f in "${@#-}"; do case "$f" in
-	h) grep '^## ' < "$0" | sed 's/## //'; exit 1;;
+## command line options
+for f in "$1"; do case "$f" in
+	-h) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
 	clean)
 		find "$working_dir" -type f -name "*.htm" \
 			! -path "$config_dir*" | while read -r file; do
@@ -73,25 +74,18 @@ for f in "${@#-}"; do case "$f" in
 		exit 0;;
 esac; done
 
-# macro routines -- global
-# Macro placeholders look like this: '{MACRO}' and can appear anywhere in
-# your markup and are parsed and replaced in-place during the final step.
-# Global macros come in 2 flavors, the built-in variables, and the
-# user-provided shell variables described in '.kagami/macros' which override
-# built-ins.
-# There are also per-file specific macros which override user-provided macros
-# and are generated shortly before the parse and replace step.
-
+## macros
 # valid macro identifiers
 mformat='[A-Za-z0-9_]+'
 
 # global environment macros
+VERSION="$("$0" -h | grep '^kagami')"
 DOC_ROOT="$working_dir"
 
 # import user-provided macros
 [ -f "$config_dir/macros" ] && . "$config_dir/macros"
 
-# file comparison routines
+## file operations
 # compare file mtime in a peculiar way
 # if either file doesn't exist, assume first file is always newer
 is_newer() (
@@ -102,53 +96,75 @@ is_newer() (
 # returns relative filename of newest file in a directory
 # if dir is empty, or doesn't exist, or is actually a file, return nothing
 newest_file() (
-	file="$(ls -at1 "$@" | tail -n +2 | head -n 1)" 2> /dev/null
+	file="$(ls -at1 "$1" | tail -n +2 | head -n 1)" 2> /dev/null
 	# ls just echos your filename back to you if it's a file
-	[ "$@" = "$file" ] && unset file
+	[ "$1" = "$file" ] && unset file
 	echo "$file"
 )
 
+# search and replace substring within a file in-place
+# file persists only in stdin while original is deleted and rewritten
+sed_inplace() (
+	{ rm "$2"; sed "$1" > "$2"; } < "$2"
+)
+
+## main routines
 # get the filename of the newest file in the config directory
 config_newest="$config_dir/$(newest_file "$config_dir")"
 
-# main routine
-# recurse through source directory and convert all markdown documents found
-find "$source_dir" -type f -name '*.md' | while read -r orig; do
+# go through directory recursively, all paths must be absolute
+process_dir() (
+	echo "$1" | grep -q '^/' || quit "'$1' not an absolute path"
+	cd "$1" && for file in *; do
+		# recurse subdirectory
+		[ -d "$1/$file" ] && process_dir "$1/$file"
 
-	# creates matching output *.htm filename for every file found
-	# file path is rewritten to land immediately outside of the source dir
-	# subdirs are created if they don't exist
-	new="$working_dir/${orig#$source_dir/}"
-	new="${new%.*}.htm"
-	new_dir="${new%/*}"
-	[ -d "$new_dir" ] ||
-		( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
+		# generate matching output file for every markdown file found
+		# file path rewritten to land outside of source dir
+		# subdirs are created if they don't exist
+		echo "$file" | grep -q '\.md$' || continue
+		orig="$1/$file"
+		new="${orig%.*}.htm"
+		new="$working_dir${new#$source_dir}"
+		new_dir="${new%/*}"
+		[ -d "$new_dir" ] ||
+			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
 
-	# Refresh output file if it's older than the source file.
-	# If output file doesn't exist yet, it is considered implicitly older,
-	# and will be created.
-	# Output file will also be refreshed if it's older than the newest file in
-	# the config directory.
-	if is_newer "$orig" "$new" || is_newer "$config_newest" "$new"; then
+		# generate an output file if stale or non-existent
+		# non-existent files are implicitly older and will be created
+		# if config dir has been modified, all files are considered stale
+		if is_newer "$orig" "$new" || is_newer "$config_newest" "$new"; then
 
-		# concatenate markup
-		( mode='+'; mesg "$new"; )
-		cat "$config_dir/head.htm" > "$new"
-		$markdown < "$orig" >> "$new"
-		cat "$config_dir/tail.htm" >> "$new"
+			# concatenate page content
+			( mode='+'; mesg "$new"; )
+			rm -rf "$new"
+			for f in head content tail; do
+				if [ "$f" != 'content' ]; then
+					cat "$config_dir/$f.htm" >> "$new"
+				else
+					# cmark escapes special chars in inline links
+					$markdown < "$orig" |
+						sed -e 's/%7B/{/' -e 's/%7D/}/' >> "$new"
+				fi
+			done
 
-		# macro routines -- file-specific
-		PAGE_TITLE="$(grep '^# ' < "$orig" | sed 's/^# //' | head -n 1)"
+			# convert links to other markdown files
+			sed_inplace "s,\.md,\.htm," "$new"
 
-		# macro routines -- final search and replace
-		# When a macro is found, the brackets are removed, the resulting
-		# identifier is interpreted as a shell variable and it's contents
-		# replace the placeholder text in-place.
-		# If the variable is not set, the placeholder is simply removed.
-		egrep -o "\{$mformat\}" < "$new" | sort | uniq | while read -r ext_macro; do
-			int_macro="$(echo "$ext_macro" | egrep -o "$mformat")"
-			eval "int_macro=\${$int_macro}"
-			{ rm "$new"; sed "s,$ext_macro,$int_macro," > "$new"; } < "$new"
-		done
-	fi
-done
+			# local environment macros
+			PAGE_TITLE="$(grep '^# ' < "$orig" | sed 's/^# //' | head -n 1)"
+			[ ! -z "$PAGE_TITLE" ] || PAGE_TITLE="${new##*/}" # fallback
+
+			# interpret inline macros as shell variables
+			# replace macro placeholder with contents of shell variable if set
+			egrep -o "\{$mformat\}" < "$new" |
+				sort | uniq | while read -r ext_macro; do
+				int_macro="$(echo "$ext_macro" | egrep -o "$mformat")"
+				eval "int_macro=\${$int_macro}"
+				sed_inplace "s,$ext_macro,$int_macro," "$new"
+			done
+		fi
+	done
+)
+
+process_dir "$source_dir"

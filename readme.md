@@ -1,70 +1,104 @@
-# kagami — static microblog generator
+# kagami — static microblog processor
+This is a minimalist POSIX shell implementation of a static HTML template
+processor, meant for low-effort blogposting.
 
-This is a minimalist POSIX shell implementation of a static HTML templating engine.
+Kagami provides a ~~"basic and extensible framework"~~ turing tarpit
+for generating static webpages from plaintext Markdown files using a templating
+system and a macro preprocessor that are extremely simple to use.
+---------
+
+### Templating System
+
+There are only 2 user-extensible templates, `head.htm` and `tail.htm`, which go
+before and after all your generated webpages, respectively.
+
+### Macro Preprocessor
+Kagami also provides a user-extensible macro preprocessor, using inline syntax
+that can appear anywhere in your templates or plaintext Markdown.
+
+```html
+<!-- .kagami/head.htm -->
+<link rel="stylesheet" type="text/css" href="{DOC_ROOT}/res/style.css">
+```
+```shell
+# .kagami/macros
+DOC_ROOT='/var/www'
+```
+Macros take the form `{MACRO_NAME}` and correspond to an existing shell
+environment variable, or one you define yourself using the optional `macros`
+file that is sourced at runtime. They are evaluated and replaced from the final
+webpage.
+
 
 # Usage
-Upon invocation, `kagami` searches the current directory and/or all parent directories up to `/` for a `.kagami/` subdir, any directory containing said subdir will be considered the working directory.
-
-`kagami` recursively goes through through the contents of `src/`, converts markdown documents in into HTML markup and concatenates them with a user-supplied header and footer markup to create a static website.
-
-The directory structure within `src/` is also recreated in the working directory, feel free to use your directory structure as your sitemap.
-
-`kagami` also supports a few command line options.
-
-| option | what |
-| -- | -- |
+| command line option | effect |
+| :-- | :-- |
 | `-h` | Displays help and version information. |
-| `clean` | Recursively removes all `*.htm` files in the working directory, except for `.kagami/` |
+| `clean` | Recursively removes all `*.htm` files in the working directory, excluding files located in `.kagami/` |
 
+Invoking Kagami searches the current directory and all parent directories above
+it for an existing `.kagami/` configuration and a `src/` directory. If found,
+this becomes the _**working directory**_, all operations are relative to this
+directory.
 
-# Configuration folder
-* `.kagami/macros`
-	* List of user-provided shell variables that are queried during macro search and replace.
-		* This file is sourced by `kagami` so feel free to use POSIX shell syntax.
-* `.kagami/header.htm`
-	* HTML syntax that is prepended to every processed markdown document in `src/`
-* `.kagami/footer.htm`
-	* HTML syntax that is appended after every processed markdown document in `src/`
+Kagami will then recurse through the `src/` directory and convert every
+plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
+`src/`, preserving the same directory structure.
 
-# Minimal configuration
-`kagami` expects a `.kagami/` and a `src/` directory before doing anything, but won't complain if those directories are empty.
-Aside from that, you're free to do whatever you want. A barebones template is provided so you can get started.
+Subsequent invocations will only refresh webpages that are older than their
+corresponding source file.
+If the `.kagami/` configuration has changed, all webpages will be regenerated.
+
+An example configuration is provided so you can get started.
+
+### Error Handling
+Kagami does very little in the way of error handling, and will not try to
+prevent most forms of user error.
+
+The `.kagami/` and `src/` directories can be empty and Kagami might warn
+about it but won't stop you, you just won't get anything useful.
 
 # Macros
-Macro placeholders look like this: `{MACRO}` and can appear anywhere in your markup and are parsed and replaced in-place during the final step.
-Global macros come in 2 flavors, the built-in variables, and the user-provided shell variables described in `.kagami/macros` which override built-ins.
+When a `{MACRO}` is found, the brackets are removed, the resulting identifier is
+interpreted as a shell variable `$MACRO` and it's contents replace the macro text
+in-place. If the variable is empty or unset, the macro is stripped from the
+final webpage.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
+### Global Macros
+These are generated at startup and do not change during runtime.
+
+User-provided shell variables sourced from `.kagami/macros` can extend, override
+or unset these at will.
+
 | built-in | description |
-| -- | -- |
-| `{DOC_ROOT}` | Document root prefix, set to working directory by default. |
+| :-- | :-- |
+| `VERSION` | Processor name and version information. |
+| `DOC_ROOT` | Document root prefix, set to working directory by default. |
 
-There are also per-file specific macros which override user-provided macros and are generated shortly before the parse and replace step.
+### Local Macros
+These are uniquely generated from every processed file at runtime and override global and
+user-provided shell variables.
 
-| built-in | description |
-| -- | -- |
-| `{PAGE_TITLE}` | Derived from the first `<h1>` heading on the page. |
-
-When a macro is found, the brackets are removed, the resulting identifier is interpreted as a shell variable and it's contents replace the placeholder text in-place. If the variable is not set, the placeholder is simply removed.
-
-# Background
-This script replaced a previous generic site generator written in GNU make and GNU m4 macro processor that quickly ballooned in complexity.
-m4 allows you to run inline shell commands similar to PHP but has no concept of escape characters and will happily eat any word that matches a built-in macro, like `divert` and `shift`.
+| built-in | description | fallback |
+| :-- | :-- | :-- |
+| `PAGE_TITLE` | Taken from first `<h1>` heading on the page. | page filename |
 
 # Installation
-Run `make install` to install to `/usr/local` by default.
+`make install` to drop the `kagami` executable in `/usr/local` by default.
 
-You can change install location with the `PREFIX` variable, eg.
-`make install PREFIX=$HOME/.local`
+You can change the install location with the `PREFIX` variable, eg. `make
+install PREFIX=$HOME/.local`
 
 # Dependencies
-* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting [Github Flavored](https://github.github.com/gfm/) Markdown to HTML
-	* _Most GNU/Linux distros already package this._
+* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting [Github Flavored](https://github.github.com/gfm) Markdown to HTML
+	* _Packaged by most GNU/Linux distros._
 * any POSIX-compliant shell
 
 # Example
-~~My personal site at https://microsounds.github.io/ is built with `kagami` from sources located [here](https://github.com/microsounds/microsounds.github.io).~~
+~~My [personal site](https://microsounds.github.io) is built with Kagami from
+sources located [here](https://github.com/microsounds/microsounds.github.io).~~
 
 # License
 GPLv3

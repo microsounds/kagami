@@ -1,5 +1,6 @@
-# {DOC_ROOT} prefixes URLs pointing to static resources on your own site,
-# such as stylesheets, images and scripts. kagami sets this to the
-# working dir by default, uncomment to deploy on a webserver.
+# DOC_ROOT prefixes absolute static resource URLs in example templates.
+# Kagami sets DOC_ROOT to working dir by default.
+# Unset to make URLs start from /.
 #unset DOC_ROOT
+
 SITE_NAME='My COOL Website'
