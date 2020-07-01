@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-### kagami v0.2 — static microblog processor
-# Copyright (c) 2020 microsounds <https://github.com/microsounds>
+### kagami v0.3 — static microblog processor
+### (c) 2020 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,18 +17,25 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
 
-## rudimentary error checking
+#
+#
+## ERROR CHECKING
+#
 mode='error'
-mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts
+mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts?
 mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting."; exit 1; }
 
-# dependencies
+# requirements
 markdown='cmark-gfm'
-command -v "$markdown" > /dev/null || quit "'$markdown' is not installed"
+for f in dc $markdown dc; do
+	command -v "$f" > /dev/null || quit "'$f' is not installed"
+done
+# enable cmark extensions
 for f in footnotes table strikethrough autolink; do
 	markdown="$markdown -e $f"
 done
+markdown="$markdown --smart --unsafe"
 
 # Any dir or parent thereof that contains the following dirs will
 # be considered the working directory.
@@ -52,19 +59,23 @@ source_dir="$working_dir/$source"
 
 config_dir="$working_dir/$config"
 for f in head.htm tail.htm macros; do
-	( mode='!'; [ -f "$config_dir/$f" ] || mesg "Expected '$config_dir/$f'"; )
+	[ -f "$config_dir/$f" ] || ( mode='!'; mesg "Expected '$config_dir/$f'"; )
 done
 
 unset mode
 
+#
+#
+## OPTION FLAGS
+#
 ### usage: kagami [options]
 ###  -h          Displays this message.
 ###  clean       Recursively deletes all *.htm files in the working directory,
 ###              excluding the config directory '.kagami'.
 
-## command line options
 for f in "$1"; do case "$f" in
 	-h) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
+	-d) clean=1;;
 	clean)
 		find "$working_dir" -type f -name "*.htm" \
 			! -path "$config_dir*" | while read -r file; do
@@ -74,18 +85,10 @@ for f in "$1"; do case "$f" in
 		exit 0;;
 esac; done
 
-## macros
-# valid macro identifiers
-mformat='[A-Za-z0-9_]+'
-
-# global environment macros
-VERSION="$("$0" -h | grep '^kagami')"
-DOC_ROOT="$working_dir"
-
-# import user-provided macros
-[ -f "$config_dir/macros" ] && . "$config_dir/macros"
-
-## file operations
+#
+#
+## FILE OPERATIONS
+#
 # compare file mtime in a peculiar way
 # if either file doesn't exist, assume first file is always newer
 is_newer() (
@@ -108,13 +111,94 @@ sed_inplace() (
 	{ rm "$2"; sed "$1" > "$2"; } < "$2"
 )
 
-## main routines
+#
+#
+## METADATA ROUTINES
+#
+# derive date and moon phase from a timestamp
+date_moon() (
+	# silently reject garbage input
+	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
+
+	# calculate days since a specific new moon
+	# divide by length of lunar cycle
+	# express lit portion of the moon in percent
+	known=633381600 # Jan 26th, 1990 was a new moon
+	lit=$(echo "2k $1 $known - 86400 / 29.53 / 100 % n" | dc)
+
+	# express floor(abs(lit portion)) with an available glyph
+	steps=7; phase='🌕 🌖 🌗 🌘 🌑 🌒 🌓 🌔'
+	map=$(printf '%.0f' $(echo "${lit#-} $steps * n" | dc))
+	moon=$(echo "$phase" | tr ' ' '\n' | tail -n +$((map + 1)) | head -n 1)
+
+	# current date
+	day=$(date -d "@$1" '+%-e')
+	case $day in
+		1 | [^1]1) day="${day}st";;
+		2 | [^1]2) day="${day}nd";;
+		3 | [^1]3) day="${day}rd";;
+		*) day="${day}th"
+	esac
+	date -d "@$1" "+$moon %a, %b $day, %Y"
+)
+
+# get page title from first '<h1>' heading in markdown file
+md_title() (
+	title="$(grep '^# ' < "$1" | sed 's/^# //' | head -n 1)"
+	echo "${title:-${1##*/}}" # filename as fallback
+)
+
+# get created/updated timestamps from first 2 inline comments in
+# file that take the form '<!--word xxxx/xx/xx-->'
+md_timestamp() (
+	st='^<!--'; ed='-->$'
+	egrep "$st" < "$1" | sed -e "s/$st//" -e "s/$ed//" | head -n 2 |
+		while read -r date; do
+		# return valid dates only
+		date="$(date -d "${date#* }" '+%s')" 2> /dev/null || continue
+		echo "$date"
+	done
+)
+
+# generate a markdown index of files in the same directory sorted by
+# descending creation date, files without timestamps will not show up
+# on this list
+# file URLs are relative to index.md for now
+md_index() (
+	cd "$1"
+	for f in *.md; do
+		date="$(md_timestamp "$f" | head -n 1)"
+		[ ! -z "$date" ] &&
+			date="$date\t$(date_moon "$date")" || continue
+		list="$list\n$date --- [$(md_title "$f")]("$f")<br/>"
+	done
+	echo "$list" | sort -nr | cut -f2
+)
+
+#
+#
+## MACROS
+#
+# valid macro identifiers
+mformat='[A-Za-z0-9_]+'
+
+# global environment macros
+VERSION="$("$0" -h | grep '^kagami')"
+DOC_ROOT="$working_dir"
+
+# import user-provided macros
+[ -f "$config_dir/macros" ] && . "$config_dir/macros"
+
+#
+#
+## MAIN ROUTINES
+#
 # get the filename of the newest file in the config directory
 config_newest="$config_dir/$(newest_file "$config_dir")"
 
 # go through directory recursively, all paths must be absolute
 process_dir() (
-	echo "$1" | grep -q '^/' || quit "'$1' not an absolute path"
+	case "$1" in [^/]*) quit "'$1' not an absolute path";; esac
 	cd "$1" && for file in *; do
 		# recurse subdirectory
 		[ -d "$1/$file" ] && process_dir "$1/$file"
@@ -122,13 +206,17 @@ process_dir() (
 		# generate matching output file for every markdown file found
 		# file path rewritten to land outside of source dir
 		# subdirs are created if they don't exist
-		echo "$file" | grep -q '\.md$' || continue
+		case "$file" in *.md);; *) continue; esac
 		orig="$1/$file"
 		new="${orig%.*}.htm"
 		new="$working_dir${new#$source_dir}"
 		new_dir="${new%/*}"
 		[ -d "$new_dir" ] ||
 			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
+
+		# index files have a dynamic index and are always refreshed
+		unset index
+		case "$orig" in *index.md) touch "$orig"; index=1;; esac
 
 		# generate an output file if stale or non-existent
 		# non-existent files are implicitly older and will be created
@@ -143,17 +231,24 @@ process_dir() (
 					cat "$config_dir/$f.htm" >> "$new"
 				else
 					# cmark escapes special chars in inline links
+					echo "<!--{VERSION}-->" >> "$new"
 					$markdown < "$orig" |
 						sed -e 's/%7B/{/' -e 's/%7D/}/' >> "$new"
+					# generate index for this directory
+					if [ ! -z "$index" ]; then
+						md_index "${orig%/*}" | $markdown >> "$new"
+					fi
 				fi
 			done
 
 			# convert links to other markdown files
-			sed_inplace "s,\.md,\.htm," "$new"
+			sed_inplace 's,\.md,\.htm,' "$new"
 
 			# local environment macros
-			PAGE_TITLE="$(grep '^# ' < "$orig" | sed 's/^# //' | head -n 1)"
-			[ ! -z "$PAGE_TITLE" ] || PAGE_TITLE="${new##*/}" # fallback
+			timest="$(md_timestamp "$orig")"
+			TITLE="$(md_title "$orig")"
+			CREATED="$(date_moon $(echo "$timest" | tail -n +1 | head -n 1))"
+			UPDATED="$(date_moon $(echo "$timest" | tail -n +2 | head -n 1))"
 
 			# interpret inline macros as shell variables
 			# replace macro placeholder with contents of shell variable if set
@@ -161,7 +256,7 @@ process_dir() (
 				sort | uniq | while read -r ext_macro; do
 				int_macro="$(echo "$ext_macro" | egrep -o "$mformat")"
 				eval "int_macro=\${$int_macro}"
-				sed_inplace "s,$ext_macro,$int_macro," "$new"
+				sed_inplace "s|$ext_macro|$int_macro|" "$new"
 			done
 		fi
 	done
