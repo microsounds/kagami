@@ -1,14 +1,13 @@
 # kagami — static microblog processor
 This is a minimalist POSIX shell implementation of a static HTML template
-processor, meant for low-effort blogposting.
+processor, designed for low-effort blogposting.
 
-Kagami provides a ~~"basic and extensible framework"~~ turing tarpit
-for generating static webpages from plaintext Markdown files using a templating
-system and a macro preprocessor that are extremely simple to use.
+Kagami provides an extensible turing tarpit for dynamically generating
+webpages from plaintext Markdown files through an easy to use templating
+system and macro preprocessor.
 ---------
 
 ### Templating System
-
 There are only 2 user-extensible templates, `head.htm` and `tail.htm`, which go
 before and after all your generated webpages, respectively.
 
@@ -29,7 +28,6 @@ environment variable, or one you define yourself using the optional `macros`
 file that is sourced at runtime. They are evaluated and replaced from the final
 webpage.
 
-
 # Usage
 | command line option | effect |
 | :-- | :-- |
@@ -46,23 +44,36 @@ plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
 `src/`, preserving the same directory structure.
 
 Subsequent invocations will only refresh webpages that are older than their
-corresponding source file.
+corresponding source file. Indexes are always refreshed, regaredless of file
+age.
 If the `.kagami/` configuration has changed, all webpages will be regenerated.
 
-An example configuration is provided so you can get started.
-
 ### Error Handling
-Kagami does very little in the way of error handling, and will not try to
-prevent most forms of user error.
+Kagami does very little error handling,
+Missing configuration files will give error messages, but user error will not.
 
 The `.kagami/` and `src/` directories can be empty and Kagami might warn
 about it but won't stop you, you just won't get anything useful.
 
+An example configuration is provided so you can get started.
+
+# Metadata and Indexes
+You can include inline metadata in your markdown files containing publishing
+information, such as creation date or date of last modification.
+A date timestamp takes the form `<!--label XXXX/XX/XX-->` where the date can be
+any valid date string accepted by GNU date.
+
+If a particular directory has an `index.md`, the resulting webpage will feature
+a list of all other webpages in the same directory sorted by creation date
+appended after your content.
+
+Omitting date information lets you exclude files from this index.
+
 # Macros
-When a `{MACRO}` is found, the brackets are removed, the resulting identifier is
-interpreted as a shell variable `$MACRO` and it's contents replace the macro text
-in-place. If the variable is empty or unset, the macro is stripped from the
-final webpage.
+When a `{MACRO}` is found, the brackets are removed, the resulting identifier
+is interpreted as a shell variable `$MACRO` and it's contents replace the
+macro text in-place. If the variable is empty or unset, the macro is stripped
+from the final webpage.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
@@ -83,7 +94,9 @@ user-provided shell variables.
 
 | built-in | description | fallback |
 | :-- | :-- | :-- |
-| `PAGE_TITLE` | Taken from first `<h1>` heading on the page. | page filename |
+| `TITLE` | Taken from first `<h1>` heading on the page. | page filename |
+| `CREATED` | Taken from first markdown comment in the form `<!--created xx/xx/xxxx-->` | N/A |
+| `UPDATED` | Taken from second markdown comment in the form `<!--updated xx/xx/xxxx-->` | N/A |
 
 # Installation
 `make install` to drop the `kagami` executable in `/usr/local` by default.
@@ -92,9 +105,10 @@ You can change the install location with the `PREFIX` variable, eg. `make
 install PREFIX=$HOME/.local`
 
 # Dependencies
-* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting [Github Flavored](https://github.github.com/gfm) Markdown to HTML
-	* _Packaged by most GNU/Linux distros._
-* any POSIX-compliant shell
+* POSIX shell
+* GNU date
+* [dc (desk calculator)](https://en.wikipedia.org/wiki/dc_(computer_program)) - for date conversion routines
+* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting github flavored markdown to html
 
 # Example
 ~~My [personal site](https://microsounds.github.io) is built with Kagami from

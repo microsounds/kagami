@@ -3,4 +3,4 @@
 # Unset to make URLs start from /.
 #unset DOC_ROOT
 
-SITE_NAME='My COOL Website'
+SITE_NAME='Kagami Example Template'

@@ -6,7 +6,7 @@ body {
 	background-blend-mode: screen, multiply, normal;
 	background-size: auto, 400px, auto;
 	background-attachment: fixed;
-	font-family: "Liberation Serif", "Times New Roman", serif;
+	font-family: serif;
 	color: #FFFFFF;
 	text-shadow: 3px 1px #646464;
 }
