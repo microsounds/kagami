@@ -99,12 +99,6 @@ newest_file() (
 	echo "$file"
 )
 
-# search and replace substring within a file in-place
-# file persists only in stdin while original is deleted and rewritten
-sed_inplace() (
-	{ rm "$2"; sed "$1" > "$2"; } < "$2"
-)
-
 #
 #
 ## METADATA ROUTINES
@@ -242,7 +236,7 @@ process_dir() (
 				cat "$config_dir/head.htm"
 				echo '<!--{VERSION}-->'
 				# cmark escapes macro identifiers in inline links
-				$markdown < "$orig" | sed -e 's/%7B/{/' -e 's/%7D/}/'
+				$markdown < "$orig" | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
 				# regenerate index for this directory
 				if [ ! -z "$index" ]; then
 					echo '<div class="index">'
@@ -260,10 +254,10 @@ process_dir() (
 					# interpret inline macros as shell variables
 					eval "int=\${$int}"
 					# replace macro with contents of shell variable if set
-					tmp="$(echo "$tmp" | sed "s\`$ext\`$int\`")"
+					tmp="$(echo "$tmp" | sed "s\`$ext\`$int\`g")"
 				done
 				# convert links to other markdown files
-				echo "$tmp" | sed 's,\.md,\.htm,'
+				echo "$tmp" | sed 's,\.md,\.htm,g'
 			} > "$new" && ( mode='+'; mesg "$new"; )
 		fi
 	done
