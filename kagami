@@ -103,9 +103,14 @@ newest_file() (
 #
 ## METADATA ROUTINES
 #
-# derive date and moon phase from a timestamp
-date_moon() (
-	# silently reject garbage input
+# derive date from a timestamp
+simple_date() (
+	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
+	date -d "1970-01-01 UTC $1 seconds" '+%B %Y'
+)
+
+# derive full date and moon phase from a timestamp
+fancy_date() (
 	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
 
 	# calculate days since a specific new moon
@@ -144,8 +149,7 @@ md_timestamp() (
 	egrep "$st" < "$1" | sed -e "s/$st//" -e "s/$ed//" | head -n 2 |
 		while read -r date; do
 		# return valid dates only
-		date="$(date -d "${date#* }" '+%s')" 2> /dev/null || continue
-		echo "$date"
+		date -d "${date#* }" '+%s' 2> /dev/null
 	done
 )
 
@@ -156,10 +160,10 @@ md_timestamp() (
 md_index() (
 	cd "$1"
 	for f in *.md; do
-		date="$(md_timestamp "$f" | head -n 1)"
-		[ ! -z "$date" ] &&
-			date="$date\t$(date_moon "$date")" || continue
-		list="$list\n$date --- [$(md_title "$f")]($f)<br/>"
+		secs="$(md_timestamp "$f" | head -n 1)"
+		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
+			list="$list\n$secs\t* [$(md_title "$f")]($f) --- _${date}_"
+		fi
 	done
 	# remove trailing newline and sort by date
 	echo "$list" | grep . | sort -nr | cut -f2
@@ -226,8 +230,8 @@ process_dir() (
 			# local environment macros
 			timest="$(md_timestamp "$orig")"
 			TITLE="$(md_title "$orig")"
-			CREATED="$(date_moon $(echo "$timest" | tail -n +1 | head -n 1))"
-			UPDATED="$(date_moon $(echo "$timest" | tail -n +2 | head -n 1))"
+			CREATED="$(fancy_date $(echo "$timest" | tail -n +1 | head -n 1))"
+			UPDATED="$(fancy_date $(echo "$timest" | tail -n +2 | head -n 1))"
 
 			# 2-stage pipeline
 			# process entire output file in memory to reduce disk write latency
