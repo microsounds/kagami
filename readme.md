@@ -36,8 +36,8 @@ FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 # Usage
 | command line option | effect |
 | :-- | :-- |
+| `clean` | Recursively deletes all output files that would have been created under normal operation. |
 | `-h` | Displays help and version information. |
-| `clean` | Recursively removes all `*.htm` files in the working directory, excluding files located in `.kagami/` |
 
 Invoking Kagami searches the current directory and all parent directories above
 it for an existing `.kagami/` configuration and a `src/` directory. If found,
@@ -111,10 +111,10 @@ The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
 
 # Requirements
-* POSIX shell
-* GNU date
-* [dc (desk calculator)](https://en.wikipedia.org/wiki/dc_(computer_program)) - for date conversion routines
-* [cmark-gfm](https://github.com/github/cmark-gfm) - for converting github flavored markdown to html
+* POSIX sh
+* GNU coreutils
+* [dc (desk calculator)](https://en.wikipedia.org/wiki/dc_(computer_program)) — Required for date conversion routines
+* [cmark-gfm](https://github.com/github/cmark-gfm) — Markdown to HTML converter
 	* Most distros package this.
 
 # Example

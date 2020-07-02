@@ -24,7 +24,7 @@
 mode='error'
 mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts?
 mesg() { mesg_st "$@"; printf '\n'; }
-quit() { mesg "$@, exiting."; exit 1; }
+quit() { mesg "$@, exiting." 1>&2; exit 1; }
 
 # requirements
 markdown='cmark-gfm'
@@ -69,20 +69,14 @@ unset mode
 ## OPTION FLAGS
 #
 ### usage: kagami [options]
+###  clean       Recursively deletes all output files that would have been
+###              created under normal operation.
 ###  -h          Displays this message.
-###  clean       Recursively deletes all *.htm files in the working directory,
-###              excluding the config directory '.kagami'.
 
+unset clean
 for f in "$1"; do case "$f" in
 	-h) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
-	-d) clean=1;;
-	clean)
-		find "$working_dir" -type f -name "*.htm" \
-			! -path "$config_dir*" | while read -r file; do
-				( mode='-'; mesg "$file"; )
-				rm "$file"
-			done
-		exit 0;;
+	clean) clean=1;;
 esac; done
 
 #
@@ -132,14 +126,15 @@ date_moon() (
 	moon=$(echo "$phase" | tr ' ' '\n' | tail -n +$((map + 1)) | head -n 1)
 
 	# current date
-	day=$(date -d "@$1" '+%-e')
+	timest=$(date -d "1970-01-01 UTC $1 seconds" '+%-e %a, %b x, %Y')
+	day="${timest%% *}"
 	case $day in
-		1 | [^1]1) day="${day}st";;
-		2 | [^1]2) day="${day}nd";;
-		3 | [^1]3) day="${day}rd";;
+		1 | [!1]1) day="${day}st";;
+		2 | [!1]2) day="${day}nd";;
+		3 | [!1]3) day="${day}rd";;
 		*) day="${day}th"
 	esac
-	date -d "@$1" "+$moon %a, %b $day, %Y"
+	echo "$moon ${timest#* }" | sed "s/x/$day/"
 )
 
 # get page title from first '<h1>' heading in markdown file
@@ -217,6 +212,15 @@ process_dir() (
 		[ -d "$new_dir" ] ||
 			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
 
+		# clean mode
+		# delete output files that would have been generated under
+		# normal operation if they exist
+		if [ ! -z "$clean" ]; then
+			[ -f "$new" ] && ( mode='-'; mesg "$new"; )
+			rm -rf "$new"
+			continue
+		fi
+
 		# index files have a dynamic index and are always refreshed
 		unset index
 		case "$orig" in *index.md) touch "$orig"; index=1;; esac
@@ -238,7 +242,7 @@ process_dir() (
 				cat "$config_dir/head.htm"
 				echo '<!--{VERSION}-->'
 				# cmark escapes macro identifiers in inline links
-				$markdown < /dev/stdin | sed -e 's/%7B/{/' -e 's/%7D/}/'
+				$markdown < "$orig" | sed -e 's/%7B/{/' -e 's/%7D/}/'
 				# regenerate index for this directory
 				if [ ! -z "$index" ]; then
 					echo '<div class="index">'
@@ -246,7 +250,7 @@ process_dir() (
 					echo '</div>'
 				fi
 				cat "$config_dir/tail.htm"
-			} < "$orig" | {
+			} | {
 		 		# macro processing
 				tmp="$(cat /dev/stdin)"
 				for ext in \
