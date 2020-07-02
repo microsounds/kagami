@@ -19,14 +19,19 @@ that can appear anywhere in your templates or plaintext Markdown.
 <!-- .kagami/head.htm -->
 <link rel="stylesheet" type="text/css" href="{DOC_ROOT}/res/style.css">
 ```
-```shell
-# .kagami/macros
-DOC_ROOT='/var/www'
+```html
+<!-- .kagami/tail.htm -->
+<span class="footnote">{FOOTNOTE}</span>
 ```
 Macros take the form `{MACRO_NAME}` and correspond to an existing shell
 environment variable, or one you define yourself using the optional `macros`
 file that is sourced at runtime. They are evaluated and replaced from the final
 webpage.
+```shell
+# .kagami/macros
+DOC_ROOT='/var/www'
+FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
+```
 
 # Usage
 | command line option | effect |
@@ -99,16 +104,18 @@ user-provided shell variables.
 | `UPDATED` | Taken from second markdown comment in the form `<!--updated xx/xx/xxxx-->` | N/A |
 
 # Installation
-`make install` to drop the `kagami` executable in `/usr/local` by default.
+Kagami is a single shell script, you simply keep it with your webpages at the
+document root, or you can install it to your path by running `make install`.
 
-You can change the install location with the `PREFIX` variable, eg. `make
-install PREFIX=$HOME/.local`
+The default install location is `/usr/local`, you can change this with
+`make install PREFIX=$HOME/.local`
 
-# Dependencies
+# Requirements
 * POSIX shell
 * GNU date
 * [dc (desk calculator)](https://en.wikipedia.org/wiki/dc_(computer_program)) - for date conversion routines
 * [cmark-gfm](https://github.com/github/cmark-gfm) - for converting github flavored markdown to html
+	* Most distros package this.
 
 # Example
 ~~My [personal site](https://microsounds.github.io) is built with Kagami from

@@ -10,3 +10,8 @@ body {
 	color: #FFFFFF;
 	text-shadow: 3px 1px #646464;
 }
+
+a { color: #FFB5FE; text-decoration: none; }
+a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F0; }
+
+.index { font-size: 17px; }

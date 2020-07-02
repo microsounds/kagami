@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-### kagami v0.3 — static microblog processor
+### kagami v0.4 — static microblog processor
 ### (c) 2020 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -172,7 +172,8 @@ md_index() (
 			date="$date\t$(date_moon "$date")" || continue
 		list="$list\n$date --- [$(md_title "$f")]("$f")<br/>"
 	done
-	echo "$list" | sort -nr | cut -f2
+	# remove trailing newline and sort by date
+	echo "$list" | grep . | sort -nr | cut -f2
 )
 
 #
@@ -222,42 +223,42 @@ process_dir() (
 		# non-existent files are implicitly older and will be created
 		# if config dir has been modified, all files are considered stale
 		if is_newer "$orig" "$new" || is_newer "$config_newest" "$new"; then
-
-			# concatenate page content
-			( mode='+'; mesg "$new"; )
-			rm -rf "$new"
-			for f in head content tail; do
-				if [ "$f" != 'content' ]; then
-					cat "$config_dir/$f.htm" >> "$new"
-				else
-					# cmark escapes special chars in inline links
-					echo "<!--{VERSION}-->" >> "$new"
-					$markdown < "$orig" |
-						sed -e 's/%7B/{/' -e 's/%7D/}/' >> "$new"
-					# generate index for this directory
-					if [ ! -z "$index" ]; then
-						md_index "${orig%/*}" | $markdown >> "$new"
-					fi
-				fi
-			done
-
-			# convert links to other markdown files
-			sed_inplace 's,\.md,\.htm,' "$new"
-
 			# local environment macros
 			timest="$(md_timestamp "$orig")"
 			TITLE="$(md_title "$orig")"
 			CREATED="$(date_moon $(echo "$timest" | tail -n +1 | head -n 1))"
 			UPDATED="$(date_moon $(echo "$timest" | tail -n +2 | head -n 1))"
 
-			# interpret inline macros as shell variables
-			# replace macro placeholder with contents of shell variable if set
-			egrep -o "\{$mformat\}" < "$new" |
-				sort | uniq | while read -r ext_macro; do
-				int_macro="$(echo "$ext_macro" | egrep -o "$mformat")"
-				eval "int_macro=\${$int_macro}"
-				sed_inplace "s|$ext_macro|$int_macro|" "$new"
-			done
+			# 2-stage pipeline
+			# process entire output file in memory to reduce disk write latency
+			{
+				# concatenate page content
+				cat "$config_dir/head.htm"
+				# cmark escapes macro identifiers in inline links
+				echo '<!--{VERSION}-->' | cat - "$orig" | $markdown |
+					sed -e 's/%7B/{/' -e 's/%7D/}/'
+				# regenerate index for this directory
+				if [ ! -z "$index" ]; then
+					echo '<div class="index">'
+					md_index "${orig%/*}" | $markdown
+					echo '</div>'
+				fi
+				cat "$config_dir/tail.htm"
+			} | {
+		 		# macro processing
+				tmp="$(cat /dev/stdin)"
+				for ext in \
+					$(echo "$tmp" | egrep -o "\{$mformat\}" | sort | uniq); do
+					# strip braces
+					int="${ext#?}"; int="${int%?}"
+					# interpret inline macros as shell variables
+					eval "int=\${$int}"
+					# replace macro with contents of shell variable if set
+					tmp="$(echo "$tmp" | sed "s\`$ext\`$int\`")"
+				done
+				# convert links to other markdown files
+				echo "$tmp" | sed 's,\.md,\.htm,'
+			} > "$new" && ( mode='+'; mesg "$new"; )
 		fi
 	done
 )
