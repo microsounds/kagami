@@ -233,7 +233,7 @@ process_dir() (
 			CREATED="$(fancy_date $(echo "$timest" | tail -n +1 | head -n 1))"
 			UPDATED="$(fancy_date $(echo "$timest" | tail -n +2 | head -n 1))"
 
-			# 2-stage pipeline
+			# { concat; } | { macro; } > output
 			# process entire output file in memory to reduce disk write latency
 			{
 				# concatenate page content
@@ -249,7 +249,11 @@ process_dir() (
 				fi
 				cat "$config_dir/tail.htm"
 			} | {
-		 		# macro processing
+				# macro processing
+				# convert inline links to other markdown files
+				script='s,\.md,\.htm,g;'
+
+				# queue macro substitutions into a single sed invocation
 				tmp="$(cat /dev/stdin)"
 				for ext in \
 					$(echo "$tmp" | egrep -o "\{$mformat\}" | sort | uniq); do
@@ -258,10 +262,9 @@ process_dir() (
 					# interpret inline macros as shell variables
 					eval "int=\${$int}"
 					# replace macro with contents of shell variable if set
-					tmp="$(echo "$tmp" | sed "s\`$ext\`$int\`g")"
+					script="${script}s\`$ext\`$int\`g;"
 				done
-				# convert links to other markdown files
-				echo "$tmp" | sed 's,\.md,\.htm,g'
+				echo "$tmp" | sed -e "$script"
 			} > "$new" && ( mode='+'; mesg "$new"; )
 		fi
 	done
