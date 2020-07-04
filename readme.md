@@ -1,10 +1,11 @@
 # kagami — static microblog processor
-This is a minimalist POSIX shell implementation of a static HTML template
-processor, designed for low-effort blogposting.
 
-Kagami provides an extensible turing tarpit for dynamically generating
-webpages from plaintext Markdown files through an easy to use templating
-system and macro preprocessor.
+This is a minimalist POSIX shell implementation of a static HTML template
+processor, designed for low-frequency blogposting.
+
+**kagami** provides an extensible [turing tarpit](#turing-tarpit) for dynamically
+generating webpages from plaintext Markdown files through an easy to use
+templating system and macro preprocessor.
 ---------
 
 ### Templating System
@@ -12,7 +13,7 @@ There are only 2 user-extensible templates, `head.htm` and `tail.htm`, which go
 before and after all your generated webpages, respectively.
 
 ### Macro Preprocessor
-Kagami also provides a user-extensible macro preprocessor, using inline syntax
+**kagami** also provides a user-extensible macro preprocessor, using inline syntax
 that can appear anywhere in your templates or plaintext Markdown.
 
 ```html
@@ -39,12 +40,12 @@ FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 | `clean` | Recursively deletes all output files that would have been created under normal operation. |
 | `-h` | Displays help and version information. |
 
-Invoking Kagami searches the current directory and all parent directories above
+Invoking **kagami** searches the current directory and all parent directories above
 it for an existing `.kagami/` configuration and a `src/` directory. If found,
 this becomes the _**working directory**_, all operations are relative to this
 directory.
 
-Kagami will then recurse through the `src/` directory and convert every
+**kagami** will then recurse through the `src/` directory and convert every
 plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
 `src/`, preserving the same directory structure.
 
@@ -54,10 +55,10 @@ age.
 If the `.kagami/` configuration has changed, all webpages will be regenerated.
 
 ### Error Handling
-Kagami does very little error handling,
+**kagami** does very little error handling,
 Missing configuration files will give error messages, but user error will not.
 
-The `.kagami/` and `src/` directories can be empty and Kagami might warn
+The `.kagami/` and `src/` directories can be empty and **kagami** might warn
 about it but won't stop you, you just won't get anything useful.
 
 An example configuration is provided so you can get started.
@@ -104,8 +105,8 @@ user-provided shell variables.
 | `UPDATED` | Taken from second markdown comment in the form `<!--updated xx/xx/xxxx-->` | N/A |
 
 # Installation
-Kagami is a single shell script, you simply keep it with your webpages at the
-document root, or you can install it to your path by running `make install`.
+**kagami** is a single shell script, you can simply keep it with your webpages at
+the document root, or you can install it to your path by running `make install`.
 
 The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
@@ -117,8 +118,26 @@ The default install location is `/usr/local`, you can change this with
 * [cmark-gfm](https://github.com/github/cmark-gfm) — Markdown to HTML converter
 	* Most distros package this.
 
+# Background
+**kagami** (かがみ) is weeb for *mirror* (鏡).
+
+I wrote this to suit my needs, this was previously implemented as a tangled mess
+written in GNU m4 and make.
+Attempts to extend functionality, generate dynamic content at runtime
+promoted a rewrite.
+
+### Turing Tarpit
+**kagami** only controls the creation of webpages and dynamic content within
+them.
+
+Management of static elements such as images, client-side Javascript,
+stylesheets and even site structure are delegated to the user.
+The macro preprocessor is meant to simplify this, but only up to a point.
+
+If your needs are simple, then you'll come to apprecate **kagami**'s simplicity.
+
 # Example
-~~My [personal site](https://microsounds.github.io) is built with Kagami from
+~~My [personal site](https://microsounds.github.io) is built with **kagami** from
 sources located [here](https://github.com/microsounds/microsounds.github.io).~~
 
 # License

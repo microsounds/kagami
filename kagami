@@ -93,8 +93,8 @@ is_newer() (
 # returns relative filename of newest file in a directory
 # if dir is empty, or doesn't exist, or is actually a file, return nothing
 newest_file() (
-	file="$(ls -at1 "$1" | tail -n +2 | head -n 1)" 2> /dev/null
-	# ls just echos your filename back to you if it's a file
+	file="$(ls -1t "$1" | head -n 1)"
+	# ls echos your filename if it's a file
 	[ "$1" = "$file" ] && unset file
 	echo "$file"
 )
@@ -158,7 +158,7 @@ md_timestamp() (
 # on this list
 # file URLs are relative to index.md for now
 md_index() (
-	cd "$1"
+	cd "$1" || return
 	for f in *.md; do
 		secs="$(md_timestamp "$f" | head -n 1)"
 		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
