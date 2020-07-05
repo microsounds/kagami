@@ -112,17 +112,16 @@ simple_date() (
 # derive full date and moon phase from a timestamp
 fancy_date() (
 	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
-
 	# calculate days since a specific new moon
 	# divide by length of lunar cycle
-	# express lit portion of the moon in percent
+	# express currently elapsed cycle progress in percent
 	known=633381600 # Jan 26th, 1990 was a new moon
-	lit=$(echo "2k $1 $known - 86400 / 29.53 / 100 % n" | dc)
-
-	# express floor(abs(lit portion)) with an available glyph
-	steps=7; phase='🌕 🌖 🌗 🌘 🌑 🌒 🌓 🌔'
-	map=$(printf '%.0f' $(echo "${lit#-} $steps * n" | dc))
-	moon=$(echo "$phase" | tr ' ' '\n' | tail -n +$((map + 1)) | head -n 1)
+	cycle=$(echo "scale=2; (($1 - $known) / 86400) / 29.53" | bc)
+	cycle=${cycle#*.} # absolute value
+	# map progress to an available glyph
+	phase='🌕 🌖 🌗 🌘 🌑 🌑 🌒 🌓 🌔 🌕'
+	map=$(((${cycle#0} / 10) + 1))
+	moon=$(echo "$phase" | tr ' ' '\n' | tail -n +$map | head -n 1)
 
 	# current date
 	timest=$(date -d "1970-01-01 UTC $1 seconds" '+%-e %a, %b x, %Y')
