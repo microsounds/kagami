@@ -1,6 +1,21 @@
 # My Homepage
 
-The quick brown fox jumped over the lazy dog.
+All typical Markdown features should work.
 
-Website automatically generated with {VERSION}.
+Files named `index.md` will feature a dynamically generated list of other
+pages in the same directory appended to the bottom.
 
+```
+ __                                                   __
+|  \                                                 |  \
+| $$   __  ______    ______    ______   ______ ____   \$$
+| $$  /  \|      \  /      \  |      \ |      \    \ |  \
+| $$_/  $$ \$$$$$$\|  $$$$$$\  \$$$$$$\| $$$$$$\$$$$\| $$
+| $$   $$ /      $$| $$  | $$ /      $$| $$ | $$ | $$| $$
+| $$$$$$\|  $$$$$$$| $$__| $$|  $$$$$$$| $$ | $$ | $$| $$
+| $$  \$$\\$$    $$ \$$    $$ \$$    $$| $$ | $$ | $$| $$
+ \$$   \$$ \$$$$$$$ _\$$$$$$$  \$$$$$$$ \$$  \$$  \$$ \$$
+                   |  \__| $$
+                    \$$    $$
+                     \$$$$$$
+```

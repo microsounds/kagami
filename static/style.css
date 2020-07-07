@@ -1,17 +1,26 @@
-body {
+/* kagami example template */
+
+html {
 	background:
-		url("nightsky.png"), 
-		url("miku.jpg") no-repeat bottom right,
-		linear-gradient(180deg, #044361, #964E9A);
-	background-blend-mode: screen, multiply, normal;
-	background-size: auto, 400px, auto;
+		url("sample.png"),
+		url("kagami.png") no-repeat bottom right,
+		linear-gradient(0deg, #F3C5E9, #964E9A);
+	background-blend-mode: multiply, multiply, normal;
+	background-size: auto, 300px, auto;
 	background-attachment: fixed;
-	font-family: serif;
-	color: #FFFFFF;
-	text-shadow: 3px 1px #646464;
 }
 
-a { color: #FFB5FE; text-decoration: none; }
+body {
+	font-family: serif;
+	color: #FFFFFF;
+	text-shadow: 1px 1px #646464;
+}
+
+a { color: #BFE2EA; text-decoration: none; }
 a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F0; }
+
+.title { font-weight: bold; font-size: 25px; }
+.nav li { font-size: 18px; display: inline; }
+.nav li:not(:last-child):after { content: " | "; } 
 
 .index { font-size: 17px; }

@@ -1,5 +1,6 @@
-# kagami — static microblog processor
+<img src="static/kagami.png" width="270px" align="right" alt="kagami">
 
+# kagami — static microblog processor
 This is a minimalist POSIX shell implementation of a static HTML template
 processor, designed for low-frequency blogposting.
 
@@ -113,18 +114,16 @@ The default install location is `/usr/local`, you can change this with
 
 # Requirements
 * POSIX sh
-* GNU coreutils
-* [dc (desk calculator)](https://en.wikipedia.org/wiki/dc_(computer_program)) — Required for date conversion routines
-* [cmark-gfm](https://github.com/github/cmark-gfm) — Markdown to HTML converter
-	* Most distros package this.
+* GNU coreutils — date conversion routines
+* [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
+* [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
+	* **kagami** will fall back to standard cmark if not installed.
 
 # Background
-**kagami** (かがみ) is weeb for *mirror* (鏡).
+>**kagami** (かがみ) is weeb for *mirror* (鏡)
 
-I wrote this to suit my needs, this was previously implemented as a tangled mess
-written in GNU m4 and make.
-Attempts to extend functionality, generate dynamic content at runtime
-promoted a rewrite.
+I wrote this to suit my needs, it replaced a hot mess written in GNU m4 and
+make that did mostly the same thing, just not as well, adding dynamic content in m4 requires you to reinvent half of what your shell already gives you for free.
 
 ### Turing Tarpit
 **kagami** only controls the creation of webpages and dynamic content within
@@ -142,3 +141,4 @@ sources located [here](https://github.com/microsounds/microsounds.github.io).~~
 
 # License
 GPLv3
+

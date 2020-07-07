@@ -4,3 +4,4 @@
 #unset DOC_ROOT
 
 SITE_NAME='Kagami Example Template'
+YEAR="$(date '+%Y')"
