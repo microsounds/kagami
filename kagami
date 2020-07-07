@@ -25,17 +25,24 @@ mode='error'
 mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts?
 mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting." 1>&2; exit 1; }
+require() { command -v "$1" > /dev/null; }
 
-# requirements
-markdown='cmark-gfm'
-for f in dc $markdown dc; do
-	command -v "$f" > /dev/null || quit "'$f' is not installed"
-done
-# enable cmark extensions
-for f in footnotes table strikethrough autolink; do
-	markdown="$markdown -e $f"
-done
-markdown="$markdown --smart --unsafe"
+# Markdown utility
+# Prefer cmark-gfm, fallback to standard cmark if not found.
+cmark='cmark-gfm'; opts='--smart'
+if require "$cmark"; then
+	# enable github flavored markdown extensions
+	for f in --unsafe footnotes table strikethrough autolink; do
+		case $f in
+			-*) opts="$opts $f";;
+			*) opts="$opts -e $f"
+		esac
+	done
+else
+	cmark="${cmark%-*}"
+	require "$cmark" || quit "$cmark not installed"
+fi
+markdown="$cmark $opts"
 
 # Any dir or parent thereof that contains the following dirs will
 # be considered the working directory.
@@ -69,13 +76,14 @@ unset mode
 ## OPTION FLAGS
 #
 ### usage: kagami [options]
-###  clean       Recursively deletes all output files that would have been
-###              created under normal operation.
-###  -h          Displays this message.
+###  clean            Recursively deletes all output files that would have
+###                   been created under normal operation.
+###  -h, --help       Displays help message.
+###  -v, --version    Displays version information.
 
 unset clean
 for f in "$1"; do case "$f" in
-	-h) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
+	-*[vh]*) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
 	clean) clean=1;;
 esac; done
 
@@ -200,14 +208,10 @@ process_dir() (
 
 		# generate matching output file for every markdown file found
 		# file path rewritten to land outside of source dir
-		# subdirs are created if they don't exist
 		case "$file" in *.md);; *) continue; esac
 		orig="$1/$file"
 		new="${orig%.*}.htm"
 		new="$working_dir${new#$source_dir}"
-		new_dir="${new%/*}"
-		[ -d "$new_dir" ] ||
-			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
 
 		# clean mode
 		# delete output files that would have been generated under
@@ -217,6 +221,12 @@ process_dir() (
 			rm -rf "$new"
 			continue
 		fi
+
+		# subdirs are created if they don't exist
+		new_dir="${new%/*}"
+		[ -d "$new_dir" ] ||
+			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
+
 
 		# index files have a dynamic index and are always refreshed
 		unset index
