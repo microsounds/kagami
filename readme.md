@@ -2,9 +2,9 @@
 
 # kagami — static microblog processor
 This is a minimalist POSIX shell implementation of a static HTML template
-processor, designed for low-frequency blogposting.
+processor, designed for low-frequency Web 1.0-era blogposting.
 
-**kagami** provides an extensible [turing tarpit](#turing-tarpit) for dynamically
+**kagami** provides an extensible [turing tarpit](#background) for dynamically
 generating webpages from plaintext Markdown files through an easy to use
 templating system and macro preprocessor.
 ---------
@@ -64,15 +64,14 @@ about it but won't stop you, you just won't get anything useful.
 
 An example configuration is provided so you can get started.
 
-# Metadata and Indexes
-You can include inline metadata in your markdown files containing publishing
-information, such as creation date or date of last modification.
-A date timestamp takes the form `<!--label XXXX/XX/XX-->` where the date can be
-any valid date string accepted by GNU date.
+# Dynamic Indexes
+Markdown files can contain metadata tags, such as creation date or time of
+last modification, which take the form `<!--label XXXX/XX/XX-->` where the
+date string can be any valid human readable date understood by GNU date.
 
 If a particular directory has an `index.md`, the resulting webpage will feature
-a list of all other webpages in the same directory sorted by creation date
-appended after your content.
+a dynamic list of all other webpages in the same directory sorted by creation
+date appended after your content.
 
 Omitting date information lets you exclude files from this index.
 
@@ -114,7 +113,7 @@ The default install location is `/usr/local`, you can change this with
 
 # Requirements
 * POSIX sh
-* GNU coreutils — date conversion routines
+* GNU coreutils — Requires GNU date for date conversion routines
 * [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
 * [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
 	* **kagami** will fall back to standard cmark if not installed.
@@ -122,18 +121,11 @@ The default install location is `/usr/local`, you can change this with
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)
 
-I wrote this to suit my needs, it replaced a hot mess written in GNU m4 and
-make that did mostly the same thing, just not as well, adding dynamic content in m4 requires you to reinvent half of what your shell already gives you for free.
-
-### Turing Tarpit
-**kagami** only controls the creation of webpages and dynamic content within
-them.
-
+**kagami** was written to fit a particular use case, if your needs are simple,
+then **kagami** is simple.
+This isn't a full-fat wordpress-style blog generator.
 Management of static elements such as images, client-side Javascript,
-stylesheets and even site structure are delegated to the user.
-The macro preprocessor is meant to simplify this, but only up to a point.
-
-If your needs are simple, then you'll come to apprecate **kagami**'s simplicity.
+stylesheets and site structure are delegated to the user.
 
 # Example
 ~~My [personal site](https://microsounds.github.io) is built with **kagami** from
