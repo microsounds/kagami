@@ -64,7 +64,7 @@ about it but won't stop you, you just won't get anything useful.
 
 An example configuration is provided so you can get started.
 
-# Dynamic Indexes
+# Dynamic Indexes and Linking
 Markdown files can contain metadata tags, such as creation date or time of
 last modification, which take the form `<!--label XXXX/XX/XX-->` where the
 date string can be any valid human readable date understood by GNU date.
@@ -74,6 +74,13 @@ a dynamic list of all other webpages in the same directory sorted by creation
 date appended after your content.
 
 Omitting date information lets you exclude files from this index.
+
+You can also manually link to other pages arbitrarily.
+```html
+[link]({DOC_ROOT}/path/to/file.md)
+<a href="{DOC_ROOT}/path/to/file.md">...</a>
+```
+If you link to another `*.md` document, it will be converted to an `*.htm` link.
 
 # Macros
 When a `{MACRO}` is found, the brackets are removed, the resulting identifier
@@ -105,7 +112,7 @@ user-provided shell variables.
 | `UPDATED` | Taken from second markdown comment in the form `<!--updated xx/xx/xxxx-->` | N/A |
 
 # Installation
-**kagami** is a single shell script, you can simply keep it with your webpages at
+**kagami** is a single shell script, you can keep it with your webpages at
 the document root, or you can install it to your path by running `make install`.
 
 The default install location is `/usr/local`, you can change this with
@@ -123,14 +130,13 @@ The default install location is `/usr/local`, you can change this with
 
 **kagami** was written to fit a particular use case, if your needs are simple,
 then **kagami** is simple.
-This isn't a full-fat wordpress-style blog generator.
-Management of static elements such as images, client-side Javascript,
-stylesheets and site structure are delegated to the user.
+This isn't a full-fat wordpress-style blog generator. Management of static
+elements such as images, client-side Javascript, stylesheets and site
+structure are delegated to the user.
 
 # Example
 ~~My [personal site](https://microsounds.github.io) is built with **kagami** from
 sources located [here](https://github.com/microsounds/microsounds.github.io).~~
 
 # License
-GPLv3
-
+GNU General Public License version 3 or later.
