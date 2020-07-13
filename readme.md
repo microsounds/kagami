@@ -39,7 +39,8 @@ FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 | command line option | effect |
 | :-- | :-- |
 | `clean` | Recursively deletes all output files that would have been created under normal operation. |
-| `-h` | Displays help and version information. |
+| `-h`, `--help` | Displays help information. |
+| `-v`, `--version` | Displays version information. |
 
 Invoking **kagami** searches the current directory and all parent directories above
 it for an existing `.kagami/` configuration and a `src/` directory. If found,

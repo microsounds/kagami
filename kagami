@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-### kagami v0.4 — static microblog processor
-### (c) 2020 microsounds <https://github.com/microsounds>, GPLv3+
+#v# kagami v0.4 — static microblog processor
+#v# (c) 2020 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -16,6 +16,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
+
+#
+#
+## OPTION FLAGS
+#
+#h# usage: kagami [options]
+#h#  clean            Recursively deletes all output files that would have
+#h#                   been created under normal operation.
+#h#  -h, --help       Displays help message.
+#h#  -v, --version    Displays version information.
+unset clean
+for f in "$1"; do case "$f" in
+	-*[vh]*)
+		sel=$(echo "$f" | tr -d '-' | cut -c 1)
+		egrep "^#$sel" < "$0" | sed 's/[^ ]* //'
+		exit 1;;
+	clean) clean=1;;
+esac; done
 
 #
 #
@@ -70,22 +88,6 @@ for f in head.htm tail.htm macros; do
 done
 
 unset mode
-
-#
-#
-## OPTION FLAGS
-#
-### usage: kagami [options]
-###  clean            Recursively deletes all output files that would have
-###                   been created under normal operation.
-###  -h, --help       Displays help message.
-###  -v, --version    Displays version information.
-
-unset clean
-for f in "$1"; do case "$f" in
-	-*[vh]*) egrep '^#{3} ' < "$0" | sed 's/^#\{3\} //'; exit 1;;
-	clean) clean=1;;
-esac; done
 
 #
 #
@@ -184,7 +186,7 @@ md_index() (
 mformat='[A-Za-z0-9_]+'
 
 # global environment macros
-VERSION="$("$0" -h | grep '^kagami')"
+VERSION="$("$0" --version | grep '^kagami')"
 DOC_ROOT="$working_dir"
 
 # import user-provided macros
