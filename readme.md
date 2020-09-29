@@ -2,11 +2,12 @@
 
 # kagami — static microblog processor
 This is a minimalist POSIX shell implementation of a static HTML template
-processor, designed for low-frequency Web 1.0-era blogposting.
+processor, designed for low-frequency Web 1.0-esque blogposting.
 
 **kagami** provides an extensible [turing tarpit](#background) for dynamically
 generating webpages from plaintext Markdown files through an easy to use
 templating system and macro preprocessor.
+
 ---------
 
 ### Templating System
@@ -54,7 +55,8 @@ plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
 Subsequent invocations will only refresh webpages that are older than their
 corresponding source file. Indexes are always refreshed, regaredless of file
 age.
-If the `.kagami/` configuration has changed, all webpages will be regenerated.
+If any files within the `.kagami/` config directory have changed, all webpages
+will be regenerated.
 
 ### Error Handling
 **kagami** does very little error handling,
@@ -62,8 +64,6 @@ Missing configuration files will give error messages, but user error will not.
 
 The `.kagami/` and `src/` directories can be empty and **kagami** might warn
 about it but won't stop you, you just won't get anything useful.
-
-An example configuration is provided so you can get started.
 
 # Dynamic Indexes and Linking
 Markdown files can contain metadata tags, such as creation date or time of
@@ -119,6 +119,9 @@ the document root, or you can install it to your path by running `make install`.
 The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
 
+An example configuration is provided so you can get started.
+You can run `./kagami` in this directory to build a sample website.
+
 # Requirements
 * POSIX sh
 * GNU coreutils — Requires GNU date for date conversion routines
@@ -129,15 +132,15 @@ The default install location is `/usr/local`, you can change this with
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)
 
-**kagami** was written to fit a particular use case, if your needs are simple,
-then **kagami** is simple.
-This isn't a full-fat wordpress-style blog generator. Management of static
-elements such as images, client-side Javascript, stylesheets and site
-structure are delegated to the user.
+**kagami** was written to fit a particular use case, mine.
+If your needs are simple, then **kagami** is simple.
+This isn't a full-fat wordpress-style blog generator.
+Management of static elements such as images, client-side Javascript,
+stylesheets and site structure are left as an exercise to the user.
 
 # Example
-~~My [personal site](https://microsounds.github.io) is built with **kagami** from
-sources located [here](https://github.com/microsounds/microsounds.github.io).~~
+My [personal site](https://microsounds.github.io) is generated using **kagami** from
+sources located [here](https://github.com/microsounds/microsounds.github.io).
 
 # License
 GNU General Public License version 3 or later.
