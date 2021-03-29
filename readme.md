@@ -101,6 +101,7 @@ or unset these at will.
 | :-- | :-- |
 | `VERSION` | Processor name and version information. |
 | `DOC_ROOT` | Document root prefix, set to working directory by default. |
+| `DATE_FUNCTION` | Define a custom date function that takes a unix timestamp and outputs a human-readable date to stdout. A plain date function is set by default. |
 
 ### Local Macros
 These are uniquely generated from every processed file at runtime and override global and
