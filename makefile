@@ -1,13 +1,11 @@
 PREFIX=/usr/local
 
 prog=kagami
-install_loc=${PREFIX}/bin/${prog}
 
-all:
+all: ${prog}
 
-install:
-	cp ${prog} ${install_loc}
-	chmod 755 ${install_loc}
+install: ${prog}
+	install -m 755 $< ${PREFIX}/bin
 
 uninstall:
-	rm ${install_loc}
+	rm ${PREFIX}/bin/${prog}
