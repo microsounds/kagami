@@ -44,13 +44,13 @@ FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 | `-v`, `--version` | Displays version information. |
 
 Invoking **kagami** searches the current directory and all parent directories above
-it for an existing `.kagami/` configuration and a `src/` directory. If found,
+it for an existing `.kagami/` configuration and a `.src/` directory. If found,
 this becomes the _**working directory**_, all operations are relative to this
 directory.
 
-**kagami** will then recurse through the `src/` directory and convert every
+**kagami** will then recurse through the `.src/` directory and convert every
 plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
-`src/`, preserving the same directory structure.
+`.src/`, preserving the same directory structure.
 
 Subsequent invocations will only refresh webpages that are older than their
 corresponding source file. Indexes are always refreshed, regaredless of file
@@ -62,7 +62,7 @@ will be regenerated.
 **kagami** does very little error handling,
 Missing configuration files will give error messages, but user error will not.
 
-The `.kagami/` and `src/` directories can be empty and **kagami** might warn
+The `.kagami/` and `.src/` directories can be empty and **kagami** might warn
 about it but won't stop you, you just won't get anything useful.
 
 # Dynamic Indexes and Linking

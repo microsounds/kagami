@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.4.1 — static microblog processor
+#v# kagami v0.4.2 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -66,7 +66,7 @@ markdown="$cmark $opts"
 # be considered the working directory.
 # All operations are relative to this dir.
 config='.kagami' # configuration directory
-source='src'     # source markdown documents
+source='.src'     # source markdown documents
 
 # Kagami will run only if the 2 dirs described above actually exist,
 # even if they're empty. Kagami tries to be fault-tolerant when convenient.
