@@ -45,8 +45,11 @@ mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting." 1>&2; exit 1; }
 require() { command -v "$1" > /dev/null; }
 
-# Markdown utility
-# Prefer cmark-gfm, fallback to standard cmark if not found.
+# require GNU date from GNU coreutils
+date --version | fgrep -q 'GNU' || quit "GNU date is required"
+
+# select markdown utility
+# prefer cmark-gfm, fallback to standard cmark if not found.
 cmark='cmark-gfm'; opts='--smart'
 if require "$cmark"; then
 	# enable github flavored markdown extensions
@@ -62,9 +65,9 @@ else
 fi
 markdown="$cmark $opts"
 
-# Any dir or parent thereof that contains the following dirs will
+# any dir or parent thereof that contains the following dirs will
 # be considered the working directory.
-# All operations are relative to this dir.
+# all operations are relative to this dir.
 config='.kagami' # configuration directory
 source='.src'     # source markdown documents
 

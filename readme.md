@@ -120,15 +120,15 @@ the document root, or you can install it to your path by running `make install`.
 The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
 
-An example configuration is provided so you can get started.
+An example template and configuration is provided so you can get started.
 You can run `./kagami` in this directory to build a sample website.
 
 # Requirements
-* POSIX sh
-* GNU coreutils — Requires GNU date for date conversion routines
+* Any POSIX-compatible shell
+* GNU date — Part of GNU coreutils, required for date conversion routines.
 * [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
 * [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
-	* **kagami** will fall back to standard cmark if not installed.
+	* **kagami** will fall back to standard cmark if not available.
 
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)
@@ -141,7 +141,7 @@ stylesheets and site structure are left as an exercise to the user.
 
 # Example
 My [personal site](https://microsounds.github.io) is generated using **kagami** from
-sources located [here](https://github.com/microsounds/microsounds.github.io).
+the **kagami** template located [here](https://github.com/microsounds/microsounds.github.io).
 
 # License
 GNU General Public License version 3 or later.
