@@ -1,6 +1,6 @@
 # DOC_ROOT prefixes absolute static resource URLs in example templates.
 # Kagami sets DOC_ROOT to working dir by default.
-# Unset to make URLs start from /.
+# Uncomment to make URLs start from /.
 #unset DOC_ROOT
 
 SITE_NAME='Kagami Example Template'

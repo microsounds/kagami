@@ -175,6 +175,12 @@ DATE_FUNCTION='full_date' # fallback date function
 # import user-provided macros
 [ -f "$config_dir/macros" ] && . "$config_dir/macros"
 
+# report on global state
+[ -z "$clean" ] && for f in DOC_ROOT; do
+	eval "val=\${$f}"
+	( mode="$f"; mesg "${val:-(unset)}"; )
+done
+
 #
 #
 ## MAIN ROUTINES
