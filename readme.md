@@ -92,11 +92,11 @@ from the final webpage.
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
 ### Global Macros
-These are generated at startup and do not change during runtime.
+These are generated and exported at startup and do not change during runtime.
 
-User-provided shell variables sourced from `.kagami/macros` can extend, override
+User-provided shell variables and scripts `.` (dot) sourced from `.kagami/macros` can extend, override
 or unset these at will.
-Scripts `.` (dot) sourced within `.kagami/macros` will have read-only access to these macros.
+Subshelled scripts will have read-only access only.
 
 | built-in | description |
 | :-- | :-- |
