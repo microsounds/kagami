@@ -130,6 +130,7 @@ You can run `./kagami` in this directory to build a sample website.
 * [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
 * [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
 	* **kagami** will fall back to standard cmark if not available.
+* pandoc *(optional)* — If installed, will generate a man file from this document during installation.
 
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)

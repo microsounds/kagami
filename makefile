@@ -1,11 +1,13 @@
 PREFIX=/usr/local
+PROG=kagami
 
-prog=kagami
+all: ${PROG}
 
-all: ${prog}
-
-install: ${prog}
+install: ${PROG}
+	mkdir -p ${PREFIX}/man/man1
+	./gen-manfile > ${PREFIX}/man/man1/$<.1
 	install -m 755 $< ${PREFIX}/bin
 
-uninstall:
-	rm ${PREFIX}/bin/${prog}
+uninstall: ${PROG}
+	rm -rf ${PREFIX}/man/man1/$<.1
+	rm -rf ${PREFIX}/bin/$<

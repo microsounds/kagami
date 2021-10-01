@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+# generates a man file from README using pandoc
+
+pandoc --version 2>&1 > /dev/null ||
+	{ echo 'Please install pandoc if you want a man file.' 1>&2; exit 0; }
+
+{	# generate man page information
+	cat <<- EOF
+		---
+		title: kagami
+		section: 1
+		header: User Commands
+		footer: $(./kagami --version | egrep -o 'v([0-9].?)+' | head -n 1)
+		date: $(git log -1 --format='%ad')
+		---
+		# NAME
+		$(./kagami --version | head -n 1)
+
+		# SYNOPSIS
+		kagami [OPTIONS]
+
+		# DESCRIPTION
+	EOF
+
+	# reformat document body
+	{ tail -n +4 | sed -E 's/^(# .*)/\U\1/g'; } < readme.md
+
+	# append author information
+	cat <<- EOF
+
+		# AUTHOR
+		$(./kagami --version | head -n 2 | tail -n 1)
+	EOF
+} | pandoc - -s -t man -o -
+
