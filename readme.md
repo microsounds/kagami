@@ -31,7 +31,7 @@ environment variable, or one you define yourself using the optional `macros`
 file that is sourced at runtime. They are evaluated and replaced from the final
 webpage.
 ```shell
-# .kagami/macros
+## .kagami/macros
 DOC_ROOT='/var/www'
 FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 ```
@@ -91,6 +91,9 @@ from the final webpage.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
+Expanded `{MACROS}` cannot contain `\n` newlines, they will be stripped by the preprocessor.
+This is a limitation of `sed`, use inline HTML in macro expansions if you need line breaks.
+
 ### Global Macros
 These are generated and exported at startup and do not change during runtime.
 
@@ -117,6 +120,7 @@ user-provided shell variables.
 # Installation
 **kagami** is a single shell script, you can keep it with your webpages at
 the document root, or you can install it to your path by running `make install`.
+On installation, if you have `pandoc` installed, this document will be available as a manpage accessible via `man kagami`.
 
 The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
@@ -130,7 +134,7 @@ You can run `./kagami` in this directory to build a sample website.
 * [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
 * [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
 	* **kagami** will fall back to standard cmark if not available.
-* pandoc *(optional)* — If installed, will generate a man file from this document during installation.
+* pandoc *(optional)* — Used during installation, creates an online manual page from this document.
 
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.4.3 — static microblog processor
+#v# kagami v0.4.4 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -35,15 +35,21 @@ for f in "$1"; do case "$f" in
 	clean) clean=1;;
 esac; done
 
+
 #
 #
-## ERROR CHECKING
+## GLOBAL / ERROR CHECKING
 #
 mode='error'
 mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts?
 mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting." 1>&2; exit 1; }
 require() { command -v "$1" > /dev/null; }
+
+# define non-colliding single-byte sed delimiter
+# this character CANNOT appear in expanded macros or processed
+# markdown documents under any circumstances
+delim="$(printf '\01')" # non-printable 0x01
 
 # require GNU date from GNU coreutils
 date --version | fgrep -q 'GNU' || quit "GNU date is required"
@@ -128,8 +134,10 @@ full_date() (
 )
 
 # get page title from first '<h1>' heading in markdown file
+# strip stray inline html syntax
 md_title() (
-	title="$(grep '^# ' < "$1" | sed 's/^# //' | head -n 1)"
+	title="$(grep '^# ' < "$1" | \
+		sed -e 's/^# //' -e 's/<[^>]*>//g' | head -n 1)"
 	echo "${title:-${1##*/}}" # filename as fallback
 )
 
@@ -218,7 +226,6 @@ process_dir() (
 		[ -d "$new_dir" ] ||
 			( mode='/'; mesg "created $new_dir"; mkdir -p "$new_dir"; )
 
-
 		# index files have a dynamic index and are always refreshed
 		unset index
 		case "$orig" in *index.md) touch "$orig"; index=1;; esac
@@ -227,6 +234,7 @@ process_dir() (
 		# non-existent files are implicitly older and will be created
 		# if config dir has been modified, all files are considered stale
 		if is_newer "$orig" "$new" || is_newer "$config_newest" "$new"; then
+
 			# local environment macros
 			timest="$(md_timestamp "$orig")"
 			TITLE="$(md_title "$orig")"
@@ -249,7 +257,7 @@ process_dir() (
 				fi
 				cat "$config_dir/tail.htm"
 			} | {
-				# macro processing
+				# macro expansion
 				# convert inline links to other markdown files
 				script='s,\.md,\.htm,g;'
 
@@ -262,9 +270,10 @@ process_dir() (
 					# interpret inline macros as shell variables
 					eval "int=\${$int}"
 					# replace macro with contents of shell variable if set
-					script="${script}s\`$ext\`$int\`g;"
+					script="${script}s${delim}${ext}${delim}${int}${delim}g;"
 				done
-				echo "$tmp" | sed -e "$script"
+				# strip newlines before expansion
+				echo "$tmp" | sed -e "$(echo "$script" | tr -d '\n')"
 			} > "$new" && ( mode='+'; mesg "$new"; )
 		fi
 	done
