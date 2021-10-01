@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.4.2 — static microblog processor
+#v# kagami v0.4.3 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -168,9 +168,9 @@ md_index() (
 mformat='[A-Za-z0-9_]+'
 
 # global environment macros
-VERSION="$("$0" --version | grep '^kagami')"
-DOC_ROOT="$working_dir"
-DATE_FUNCTION='full_date' # fallback date function
+export VERSION="$("$0" --version | grep '^kagami')"
+export DOC_ROOT="$working_dir"
+export DATE_FUNCTION='full_date' # fallback date function
 
 # import user-provided macros
 [ -f "$config_dir/macros" ] && . "$config_dir/macros"

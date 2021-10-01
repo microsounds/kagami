@@ -96,6 +96,7 @@ These are generated at startup and do not change during runtime.
 
 User-provided shell variables sourced from `.kagami/macros` can extend, override
 or unset these at will.
+Scripts `.` (dot) sourced within `.kagami/macros` will have read-only access to these macros.
 
 | built-in | description |
 | :-- | :-- |
