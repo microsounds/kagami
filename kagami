@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.5.0 — static microblog processor
+#v# kagami v0.5.1 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -154,11 +154,15 @@ md_index() (
 	echo "$list" | grep . | sort -nr | cut -f2
 )
 
+# strip stray markdown/HTML syntax from input
+md_strip() (
+	sed -e 's/^# //' -e 's/<[^>]*>//g'
+)
+
 # get page title from first '<h1>' heading in markdown file
 # strip stray inline html syntax
 md_title() (
-	title="$(grep '^# ' < /dev/stdin | \
-		sed -e 's/^# //' -e 's/<[^>]*>//g' | head -n 1)"
+	title="$(grep '^# ' < /dev/stdin | md_strip | head -n 1)"
 	echo "${title:-${1##*/}}" # filename as fallback
 )
 
@@ -174,9 +178,9 @@ md_timestamp() (
 )
 
 # create attribute identifier name from input
-# strip markdown/HTML syntax for use in identifiers
+# strip markdown/HTML syntax extra hard for use in identifiers
 md_toc_id() (
-	sed -e 's/^#* //' -e 's/<[^>]*>//g' | tr -cd 'A-Za-z0-9 ' | tr ' ' '-'
+	md_strip | tr -cd 'A-Za-z0-9 ' | tr ' ' '-'
 )
 
 # generate anchor id-linked markdown bullet list
@@ -190,13 +194,14 @@ md_toc() (
 		case "$line" in
 			\#*)
 				# convert h1-6 markdown headings to
-				# their equivalent as a tab indented bullet list
+				# their equivalent as a space indented bullet list
 				prefix="$(echo "${line% *}" | tr -cd '#')"
-				prefix="$(tr '\0' '\t' < /dev/zero \
-					| dd count=1 bs=$((${#prefix} - 1)) 2> /dev/null)"
+				prefix="$(tr '\0' ' ' < /dev/zero \
+					| dd count=2 bs=$((${#prefix} - 1)) 2> /dev/null)"
 				heading="${line#* }"
 				printf '%s* [%s](#%s)\n' \
-					"$prefix" "$heading" "$(echo "$line" | md_toc_id)";;
+					"$prefix" "$(echo "$heading" | md_strip)" \
+					"$(echo "$line" | md_toc_id)";;
 		esac
 	done < /dev/stdin
 	echo '\n</div>'
