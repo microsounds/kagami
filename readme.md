@@ -83,6 +83,27 @@ You can also manually link to other pages arbitrarily.
 ```
 If you link to another `*.md` document, it will be converted to an `*.htm` link.
 
+# Embedded Table of Contents and Anchor Links
+When writing structured content, you can embed a dynamically generated table of
+contents with navigable anchor links anywhere in your markdown using local macro `{TOC}`.
+
+Matching inline anchor links will be appended to every heading in your markdown automatically.
+```markdown
+<!-- inline anchor links will be appended automatically -->
+# hello world           <span id="hello-world"></span>
+## middle               <span id="middle"></span>
+### lesser point        <span id="lesser-point"></span>
+# second major topic    <span id="second-major-topic"></span>
+
+<!-- {TOC} macro will expand to the following -->
+<div class="toc">
+* [hello world](#hello-world)
+	* [middle](#middle)
+		* [lesser point](#lesser-point)
+* [second major topic](#second-major-topic)
+</div>
+```
+
 # Macros
 When a `{MACRO}` is found, the brackets are removed, the resulting identifier
 is interpreted as a shell variable `$MACRO` and it's contents replace the
@@ -116,6 +137,7 @@ user-provided shell variables.
 | `TITLE` | Taken from first `<h1>` heading on the page. | page filename |
 | `CREATED` | Taken from first markdown comment in the form `<!--created xx/xx/xxxx-->` | N/A |
 | `UPDATED` | Taken from second markdown comment in the form `<!--updated xx/xx/xxxx-->` | N/A |
+| `TOC` | Anchor-linked table of contents linking to all headings found on the page. | _(optional)_ |
 
 # Installation
 **kagami** is a single shell script, you can keep it with your webpages at

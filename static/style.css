@@ -13,7 +13,7 @@ html {
 body {
 	font-family: serif;
 	color: #FFFFFF;
-	text-shadow: 1px 1px #646464;
+	text-shadow: 2px 1px #646464;
 }
 
 a { color: #BFE2EA; text-decoration: none; }
@@ -24,3 +24,10 @@ a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F
 .nav li:not(:last-child):after { content: " | "; } 
 
 .index { font-size: 17px; }
+
+.toc {
+	background: rgba(0, 0, 0, 30%);
+	display: table;
+	border: 4px solid #CCC;
+    padding: 3px 10px 3px 10px;
+}

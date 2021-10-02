@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.4.4 — static microblog processor
+#v# kagami v0.5.0 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -34,7 +34,6 @@ for f in "$1"; do case "$f" in
 		exit 1;;
 	clean) clean=1;;
 esac; done
-
 
 #
 #
@@ -120,9 +119,9 @@ newest_file() (
 
 #
 #
-## METADATA ROUTINES
+## DATE ROUTINES
 #
-# derive date from a timestamp
+# simple month and year timestamp
 simple_date() (
 	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
 	date -d "1970-01-01 UTC $1 seconds" '+%B %Y'
@@ -133,10 +132,32 @@ full_date() (
 	date -d "1970-01-01 UTC $1 seconds" '+%d %b %Y'
 )
 
+#
+#
+## MARKDOWN ROUTINES
+#
+# note: impure function
+# generate a markdown index of files in the same directory sorted by
+# descending creation date, files without timestamps will not show up
+# on this list
+# file URLs are relative to index.md for now
+md_index() (
+	cd "$1" || return
+	for f in *.md; do
+		curr="$(cat "$f")" # load file only once
+		secs="$(echo "$curr" | md_timestamp | head -n 1)"
+		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
+			list="$list\n$secs\t* [$(echo "$curr" | md_title)]($f) --- _${date}_"
+		fi
+	done
+	# remove trailing newline and sort by date
+	echo "$list" | grep . | sort -nr | cut -f2
+)
+
 # get page title from first '<h1>' heading in markdown file
 # strip stray inline html syntax
 md_title() (
-	title="$(grep '^# ' < "$1" | \
+	title="$(grep '^# ' < /dev/stdin | \
 		sed -e 's/^# //' -e 's/<[^>]*>//g' | head -n 1)"
 	echo "${title:-${1##*/}}" # filename as fallback
 )
@@ -145,27 +166,53 @@ md_title() (
 # file that take the form '<!--word xxxx/xx/xx-->'
 md_timestamp() (
 	st='^<!--'; ed='-->$'
-	egrep "$st" < "$1" | sed -e "s/$st//" -e "s/$ed//" | head -n 2 |
+	egrep "$st" < /dev/stdin | sed -e "s/$st//" -e "s/$ed//" | head -n 2 |
 		while read -r date; do
 		# return valid dates only
 		date -d "${date#* }" '+%s' 2> /dev/null
 	done
 )
 
-# generate a markdown index of files in the same directory sorted by
-# descending creation date, files without timestamps will not show up
-# on this list
-# file URLs are relative to index.md for now
-md_index() (
-	cd "$1" || return
-	for f in *.md; do
-		secs="$(md_timestamp "$f" | head -n 1)"
-		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
-			list="$list\n$secs\t* [$(md_title "$f")]($f) --- _${date}_"
-		fi
-	done
-	# remove trailing newline and sort by date
-	echo "$list" | grep . | sort -nr | cut -f2
+# create attribute identifier name from input
+# strip markdown/HTML syntax for use in identifiers
+md_toc_id() (
+	sed -e 's/^#* //' -e 's/<[^>]*>//g' | tr -cd 'A-Za-z0-9 ' | tr ' ' '-'
+)
+
+# generate anchor id-linked markdown bullet list
+# from from all headings in markdown document
+md_toc() (
+	IFS='
+	'
+	echo '<div class="toc">\n'
+	echo 'Table of Contents'
+	while read -r line; do
+		case "$line" in
+			\#*)
+				# convert h1-6 markdown headings to
+				# their equivalent as a tab indented bullet list
+				prefix="$(echo "${line% *}" | tr -cd '#')"
+				prefix="$(tr '\0' '\t' < /dev/zero \
+					| dd count=1 bs=$((${#prefix} - 1)) 2> /dev/null)"
+				heading="${line#* }"
+				printf '%s* [%s](#%s)\n' \
+					"$prefix" "$heading" "$(echo "$line" | md_toc_id)";;
+		esac
+	done < /dev/stdin
+	echo '\n</div>'
+)
+
+# append anchor id to every heading in markdown document
+md_toc_anchor() (
+	IFS='
+	'
+	while read -r line; do
+		case "$line" in
+			\#*) printf '%s <span id="%s"></span>\n' \
+					"$line" "$(echo "$line" | md_toc_id)";;
+			*) echo "$line"
+		esac
+	done < /dev/stdin
 )
 
 #
@@ -235,20 +282,32 @@ process_dir() (
 		# if config dir has been modified, all files are considered stale
 		if is_newer "$orig" "$new" || is_newer "$config_newest" "$new"; then
 
-			# local environment macros
-			timest="$(md_timestamp "$orig")"
-			TITLE="$(md_title "$orig")"
+			# load markdown document only once
+			tmp="$(cat "$orig")"
+
+			# generate local environment macros
+			timest="$(echo "$tmp" | md_timestamp)"
+			TITLE="$(echo "$tmp" | md_title)"
 			CREATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +1 | head -n 1))"
 			UPDATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +2 | head -n 1))"
 
+			# optional macro TOC
+			# generate markdown table of contents
+			# append inline anchors to markdown document
+			echo "$tmp" | fgrep -q '{TOC}' && {
+				TOC="$(echo "$tmp" | md_toc | $markdown)"
+				tmp="$(echo "$tmp" | md_toc_anchor)"
+			}
+
 			# { concat; } | { macro; } > output
-			# process entire output file in memory to reduce disk write latency
+			# process entire file in memory to reduce disk latency
 			{
 				# concatenate page content
 				cat "$config_dir/head.htm"
 				echo '<!--{VERSION}-->'
-				# cmark escapes macro identifiers in inline links
-				$markdown < "$orig" | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
+
+				# cmark aggressively escapes macro identifiers in inline links
+				echo "$tmp" | $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
 				# regenerate index for this directory
 				if [ ! -z "$index" ]; then
 					echo '<div class="index">'
