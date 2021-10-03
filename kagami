@@ -213,7 +213,7 @@ md_toc_anchor() (
 	'
 	while read -r line; do
 		case "$line" in
-			\#*) printf '%s <span id="%s"></span>\n' \
+			\#*) printf '%s<span id="%s"></span>\n' \
 					"$line" "$(echo "$line" | md_toc_id)";;
 			*) echo "$line"
 		esac
