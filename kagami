@@ -161,11 +161,13 @@ md_index() (
 		curr="$(cat "$f")" # load file only once
 		secs="$(echo "$curr" | md_timestamp | head -n 1)"
 		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
-			list="$list\n$secs\t* [$(echo "$curr" | md_title)]($f) --- _${date}_"
+			list="$list\n$secs\t* [$(echo "$curr" | md_title "$f")]($f) --- _${date}_"
 		fi
 	done
 	# remove trailing newline and sort by date
+	printf '%s\n\n' '<div class="index">'
 	echo "$list" | grep . | sort -nr | cut -f2
+	printf '\n%s\n' '</div>'
 )
 
 # strip stray markdown/HTML syntax from input
@@ -175,6 +177,7 @@ md_strip() (
 
 # get page title from first '<h1>' heading in markdown file
 # strip stray inline html syntax
+# (optional) accepts filename argument as fallback
 md_title() (
 	title="$(grep '^# ' < /dev/stdin | md_strip | head -n 1)"
 	echo "${title:-${1##*/}}" # filename as fallback
@@ -202,7 +205,7 @@ md_toc_id() (
 md_toc() (
 	IFS='
 	'
-	echo '<div class="toc">\n'
+	printf '%s\n\n' '<div class="toc">'
 	echo 'Table of Contents'
 	while read -r line; do
 		case "$line" in
@@ -218,7 +221,7 @@ md_toc() (
 					"$(echo "$line" | md_toc_id)";;
 		esac
 	done < /dev/stdin
-	echo '\n</div>'
+	printf '\n%s\n' '</div>'
 )
 
 # append anchor id to every heading in markdown document
@@ -307,7 +310,7 @@ process_dir() (
 
 			# generate local environment macros
 			timest="$(echo "$tmp" | md_timestamp)"
-			TITLE="$(echo "$tmp" | md_title)"
+			TITLE="$(echo "$tmp" | md_title "$new")"
 			CREATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +1 | head -n 1))"
 			UPDATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +2 | head -n 1))"
 
@@ -330,9 +333,7 @@ process_dir() (
 				echo "$tmp" | $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
 				# regenerate index for this directory
 				if [ ! -z "$index" ]; then
-					echo '<div class="index">'
 					md_index "${orig%/*}" | $markdown
-					echo '</div>'
 				fi
 				cat "$config_dir/tail.htm"
 			} | {
