@@ -57,6 +57,7 @@ set_spinner() {
 	done &
 	SPINNER="$!"
 }
+clear_spinner() { kill "$SPINNER"; printf '\r'; }
 
 # define non-colliding single-byte sed delimiter
 # this character CANNOT appear in expanded macros or processed
@@ -353,7 +354,7 @@ process_dir() (
 				# strip newlines before expansion
 				echo "$tmp" | sed -e "$(echo "$script" | tr -d '\n')"
 			} > "$new" && \
-					kill "$SPINNER" && ( mode='+'; mesg "$new"; )
+					clear_spinner && ( mode='+'; mesg "$new"; )
 		fi
 	done
 )
