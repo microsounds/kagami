@@ -1,4 +1,26 @@
-# TODO list
+# TODO
+
+
+## static RSS generation
+* This would require the non-optional use of
+	`SITE_AUTHOR`, `SITE_TITLE`, `SITE_SUBTITLE` and `SITE_HOSTNAME` user provided macros
+	to form a valid RSS document during the `md_index()` process, as this is when most
+	article metadata like title, page contents and creation date are all in scope.
+
+* Relative filenames are not ideal, many RSS readers choke on use of `xml:base`
+	for relative URL basenames and it's officially deprecated from the XML standard.
+	Additional local `{MACROS}` including full canonical URL and a description would have to be implemented.
+* ~~At this point, it seems easier to re-implement a simplistic version of what pandoc does, appending
+	metadata at the top of the markdown document instead of hiding it in HTML inline comments as currently done.~~
+
+* Currently, `md_index()` has no awareness of how deep within the `.src/` directory
+	it's operating in, `for f in *.md` only returns immediate filenames.
+* Generating an RSS file from multiple invocations of `md_index()` would also violate
+	DRY principles, as it would be tacked on before and after execution of the main `process_dir()` loop
+
+## Prevent `md_toc_anchor()` from affecting `# comments` within code blocks
+
+## implement `{MACRO}` expansion in CSS and JS files
 
 ## friendly URL scheme (non-feature)
 * rewrite output filename into friendly URL based on md_title

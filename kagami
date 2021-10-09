@@ -160,8 +160,9 @@ md_index() (
 	for f in *.md; do
 		curr="$(cat "$f")" # load file only once
 		secs="$(echo "$curr" | md_timestamp | head -n 1)"
+		title="$(echo "$curr" | md_title "$f")";
 		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
-			list="$list\n$secs\t* [$(echo "$curr" | md_title "$f")]($f) --- _${date}_"
+			list="$list\n$secs\t* [$title]($f) --- _${date}_"
 		fi
 	done
 	# remove trailing newline and sort by date
