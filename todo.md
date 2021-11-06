@@ -18,7 +18,9 @@
 * Generating an RSS file from multiple invocations of `md_index()` would also violate
 	DRY principles, as it would be tacked on before and after execution of the main `process_dir()` loop
 
-## Prevent `md_toc_anchor()` from affecting `# comments` within code blocks
+## Prevent automatic rewrite features from affecting `<pre>` blocks
+* Currently, `# comments` and `*.md` references within `<pre>` blocks are being modified and introducing page issues.
+	* Prevent `md_toc_anchor()` from affecting `# comments` within code blocks.
 
 ## implement `{MACRO}` expansion in CSS and JS files
 
