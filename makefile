@@ -1,13 +1,18 @@
+# install location
 PREFIX=/usr/local
+BIN=bin
+MAN=share/man/man1
+
 PROG=kagami
 
-install: ${PROG} ${PROG}.1.gz
-	install -m 755 $< ${PREFIX}/bin
+install: ${PROG} ${PROG}.1
+	install -m 755 $< ${PREFIX}/${BIN}
 
-${PROG}.1.gz:
-	mkdir -p ${PREFIX}/share/man/man1
-	./gen-manpage | gzip > ${PREFIX}/share/man/man1/$@
+${PROG}.1:
+	mkdir -p ${PREFIX}/${MAN}
+	./gen-manpage > $@ && gzip < $@ > ${PREFIX}/${MAN}/$@.gz || :
+	rm $@
 
 uninstall: ${PROG}
-	rm -rf ${PREFIX}/share/man/man1/$<*
-	rm -rf ${PREFIX}/bin/$<*
+	rm -rf ${PREFIX}/${BIN}/$<
+	rm -rf ${PREFIX}/${MAN}/$<*

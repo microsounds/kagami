@@ -1,8 +1,11 @@
 #!/usr/bin/env sh
 # generates a man file from README using pandoc
 
-pandoc --version 2>&1 > /dev/null ||
-	{ echo 'Please install pandoc if you want a man file.' 1>&2; exit 0; }
+pandoc --version 2>&1 > /dev/null || {
+	printf '\e[1m%s\e[0m\n' \
+		'Please install pandoc if you want a man file.' 1>&2
+	exit 1
+}
 
 {	# generate man page information
 	cat <<- EOF
