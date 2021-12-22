@@ -7,17 +7,19 @@ pandoc --version 2>&1 > /dev/null || {
 	exit 1
 }
 
-{	# generate man page information
+{
+	# generate man page information
+	ver="$(./kagami --version | egrep -o 'v([0-9].?)+' | head -n 1)"
 	cat <<- EOF
 		---
 		title: kagami
 		section: 1
 		header: User Commands
-		footer: $(./kagami --version | egrep -o 'v([0-9].?)+' | head -n 1)
+		footer: $ver
 		date: $(git log -1 --format='%ad')
 		---
 		# NAME
-		$(./kagami --version | head -n 1)
+		$(./kagami --version | head -n 1 | sed "s/$ver//")
 
 		# SYNOPSIS
 		kagami [OPTIONS]
@@ -25,7 +27,8 @@ pandoc --version 2>&1 > /dev/null || {
 		# DESCRIPTION
 	EOF
 
-	# reformat document body
+	# omit title first heading
+	# capitalize document headings
 	sed -E -e '1,/^#.*kagami/d' -e 's/^(# .*)/\U\1/g' < readme.md
 
 	# append author information
