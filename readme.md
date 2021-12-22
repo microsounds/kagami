@@ -5,7 +5,7 @@ This is a minimalist POSIX shell implementation of a static HTML template
 processor, designed for low-frequency Web 1.0-esque blogposting.
 
 **kagami** provides an extensible [turing tarpit](#background) for dynamically
-generating webpages from plaintext Markdown files through an easy to use
+authoring webpages from plaintext Markdown files through an easy to use
 templating system and macro preprocessor.
 
 ---------
@@ -15,8 +15,8 @@ There are only 2 user-extensible templates, `head.htm` and `tail.htm`, which go
 before and after all your generated webpages, respectively.
 
 ### Macro Preprocessor
-**kagami** also provides a user-extensible macro preprocessor, using inline syntax
-that can appear anywhere in your templates or plaintext Markdown.
+**kagami** also provides a user-extensible macro preprocessor, using inline
+syntax that can appear anywhere in your templates or plaintext Markdown.
 
 ```html
 <!-- .kagami/head.htm -->
@@ -29,12 +29,14 @@ that can appear anywhere in your templates or plaintext Markdown.
 Macros take the form `{MACRO_NAME}` and correspond to an existing shell
 environment variable, or one you define yourself using the optional `macros`
 file that is sourced at runtime. They are evaluated and replaced from the final
-webpage.
+authored webpage.
 ```shell
 ## .kagami/macros
 DOC_ROOT='/var/www'
-FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
+FOOTNOTE="&copy; $(date '+%Y') <your name> -- All Rights Reserved."
 ```
+From this point forward, the term "Markdown" will refer to **kagami**'s special
+superset of Markdown which includes inline `{MACROS}`.
 
 # Usage
 | command line option | effect |
@@ -43,10 +45,10 @@ FOOTNOTE="(c) $(date '+%Y') <your name> -- All Rights Reserved."
 | `-h`, `--help` | Displays help information. |
 | `-v`, `--version` | Displays version information. |
 
-Invoking **kagami** searches the current directory and all parent directories above
-it for an existing `.kagami/` configuration and a `.src/` directory. If found,
-this becomes the _**working directory**_, all operations are relative to this
-directory.
+Invoking **kagami** searches the current directory and all parent directories
+above it for an existing `.kagami/` configuration and a `.src/` directory.
+If found, this becomes the _**working directory**_, all operations are relative
+to this directory.
 
 **kagami** will then recurse through the `.src/` directory and convert every
 plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
@@ -66,9 +68,10 @@ The `.kagami/` and `.src/` directories can be empty and **kagami** might warn
 about it but won't stop you, you just won't get anything useful.
 
 # Dynamic Indexes and Linking
-Markdown files can contain metadata tags, such as creation date or time of
-last modification, which take the form `<!--label XXXX/XX/XX-->` where the
-date string can be any valid human readable date understood by GNU date.
+Markdown files can contain metadata tags, such as creation date or time of last
+modification, which take the permissive form `<!-- word XXXX/XX/XX -->` where
+the date string `XXXX/XX/XX` can be any valid human readable date understood by
+GNU `date`. _Spaces between `<!--` and `-->` are optional._
 
 If a particular directory has an `index.md`, the resulting webpage will feature
 a dynamic list of all other webpages in the same directory sorted by creation
@@ -81,13 +84,19 @@ You can also manually link to other pages arbitrarily.
 [link]({DOC_ROOT}/path/to/file.md)
 <a href="{DOC_ROOT}/path/to/file.md">...</a>
 ```
-If you link to another `*.md` document, it will be converted to an `*.htm` link.
+If you link to another `*.md` document, it will be automatically converted to
+an `*.htm` link.
+
+>_To suppress this behavior in finished webpages, you can write URLs pointing
+>to literal `.md` documents using the `&period;` HTML entity code._
 
 # Embedded Table of Contents and Anchor Links
 When writing structured content, you can embed a dynamically generated table of
-contents with navigable anchor links anywhere in your markdown using local macro `{TOC}`.
+contents with navigable anchor links anywhere in your markdown using local
+macro `{TOC}`.
 
-Matching inline anchor links will be appended to every heading in your markdown automatically.
+Matching inline anchor links will be appended to every heading in your markdown
+automatically.
 ```markdown
 <!-- inline anchor links will be appended automatically -->
 # hello world           <span id="hello-world"></span>
@@ -106,31 +115,43 @@ Matching inline anchor links will be appended to every heading in your markdown 
 
 # Macros
 When a `{MACRO}` is found, the brackets are removed, the resulting identifier
-is interpreted as a shell variable `$MACRO` and it's contents replace the
-macro text in-place. If the variable is empty or unset, the macro is stripped
-from the final webpage.
+is interpreted as a shell variable `$MACRO` and it's contents replace the macro
+text in-place. If the variable is empty or unset, the macro is stripped from
+the final webpage.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
-Expanded `{MACROS}` cannot contain `\n` newlines, they will be stripped by the preprocessor.
-This is a limitation of `sed`, use inline HTML in macro expansions if you need line breaks.
+Expanded `{MACROS}` cannot contain `\n` newlines, they will be stripped by the
+preprocessor. This is a limitation of `sed`, use inline HTML in macro
+expansions such as `<br/>` if you need line breaks.
 
 ### Global Macros
 These are generated and exported at startup and do not change during runtime.
 
-User-provided shell variables and scripts `.` (dot) sourced from `.kagami/macros` can extend, override
-or unset these at will.
-Subshelled scripts will have read-only access only.
+User-provided shell variables and scripts `.` (dot) sourced from
+`.kagami/macros` can extend, override or unset these at will. Subshelled
+scripts will have read-only access only.
+
+#### Modifying global macros at runtime
+One use case for modifying global macros is the `{DOC_ROOT}` macro, which
+expands to the working directory.
+Leaving this to the default setting allows you to generate web pages for local
+viewing without an web server, simply write all intra-site URLs with
+`{DOC_ROOT}/path/to/file`.
+
+You can deploy your webpages for use with an web server by placing
+`unset DOC_ROOT` in your `.kagami/macros`, it will rewrite all your intra-site URLs
+starting from the root of your web server `/`.
 
 | built-in | description |
 | :-- | :-- |
 | `VERSION` | Processor name and version information. |
-| `DOC_ROOT` | Document root prefix, set to working directory by default. |
+| `DOC_ROOT` | Document root prefix, set to the working directory by default. |
 | `DATE_FUNCTION` | Define a custom date function that takes a unix timestamp and outputs a human-readable date to stdout. A plain date function is set by default. |
 
 ### Local Macros
-These are uniquely generated from every processed file at runtime and override global and
-user-provided shell variables.
+These are uniquely generated from every processed file at runtime and override
+global and user-provided shell variables.
 
 | built-in | description | fallback |
 | :-- | :-- | :-- |
@@ -140,9 +161,10 @@ user-provided shell variables.
 | `TOC` | Anchor-linked table of contents linking to all headings found on the page. | _(optional)_ |
 
 # Installation
-**kagami** is a single shell script, you can keep it with your webpages at
-the document root, or you can install it to your path by running `make install`.
-On installation, if you have `pandoc` installed, this document will be available as a manpage accessible via `man kagami`.
+**kagami** is a single shell script, you can keep it with your webpages at the
+document root, or you can install it to your path by running `make install`. On
+installation, if you have `pandoc` installed, this document will be available
+as a manpage accessible via `man kagami`.
 
 The default install location is `/usr/local`, you can change this with
 `make install PREFIX=$HOME/.local`
@@ -162,10 +184,19 @@ You can run `./kagami` in this directory to build a sample website.
 >**kagami** (かがみ) is weeb for *mirror* (鏡)
 
 **kagami** was written to fit a particular use case, mine.
-If your needs are simple, then **kagami** is simple.
-This isn't a full-fat wordpress-style blog generator.
+If your needs are simple, then **kagami** is simple. This isn't a full-fat
+wordpress-style blog generator.
 Management of static elements such as images, client-side Javascript,
-stylesheets and site structure are left as an exercise to the user.
+stylesheets and site structure fall outside of the scope of this tool.
+
+Several scrapped iterations of this tool were previously written as a portable
+makefile using a C preprocessor and later, general purpose macro preprocessor
+GNU `m4`.
+`cpp` chokes on C syntax being used incorrectly, `m4` chokes on stray grave
+symbols, and probably other things too.
+
+I ended up implementing elements from both, along with the ability to add custom functionality
+as part of the **kagami** template without making changes to the tool itself.
 
 # Example
 My [personal site](https://microsounds.github.io) is generated using **kagami** from

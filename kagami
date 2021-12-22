@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.5.3 — static microblog processor
+#v# kagami v0.5.4 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -184,12 +184,13 @@ md_title() (
 	echo "${title:-${1##*/}}" # filename as fallback
 )
 
-# get created/updated timestamps from first 2 inline comments in
-# file that take the form '<!--word xxxx/xx/xx-->'
+# return newline delimited list of unix timestamps derived from every page
+# comment containing well formed GNU date compatible date strings in the form
+# '<!--word xxxx/xx/xx-->'
 md_timestamp() (
-	st='^<!--'; ed='-->$'
-	egrep "$st" < /dev/stdin | sed -e "s/$st//" -e "s/$ed//" | head -n 2 |
-		while read -r date; do
+	st='^<!-- *'; ed=' *-->$'
+	grep "$st" < /dev/stdin | sed -e "s/$st//" -e "s/$ed//" \
+		| while read -r date; do
 		# return valid dates only
 		date -d "${date#* }" '+%s' 2> /dev/null
 	done
@@ -314,7 +315,7 @@ process_dir() (
 			# generate local environment macros
 			timest="$(echo "$tmp" | md_timestamp)"
 			TITLE="$(echo "$tmp" | md_title "$new")"
-			CREATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +1 | head -n 1))"
+			CREATED="$($DATE_FUNCTION $(echo "$timest" | head -n 1))"
 			UPDATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +2 | head -n 1))"
 
 			# optional macro TOC
