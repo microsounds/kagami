@@ -8,6 +8,8 @@ processor, designed for low-frequency Web 1.0-esque blogposting.
 authoring webpages from plaintext Markdown files through an easy to use
 templating system and macro preprocessor.
 
+Unlike other static site authoring tools, **kagami** stays out of your way and doesn't enforce a specific site layout or force you to prepend your documents with YAML-style frontmatter schemes.
+
 ---------
 
 ### Templating System
