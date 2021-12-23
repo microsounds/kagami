@@ -1,5 +1,15 @@
 # TODO
+List of outstanding issues.
 
+## Prevent automatic rewrite features from affecting `<pre>` blocks
+* Currently, `# comments` and `*.md` references within `<pre>` blocks are being modified and introducing page issues.
+	* Prevent `md_toc_anchor()` from affecting `# comments` within code blocks.
+
+### `# comments`
+This can be avoided by using markdown single-tab delimited `<pre>` blocks (not \`\`\`) at the expense of losing syntax highlighting hints.
+
+### `*.md => *.htm` rewrites
+This can be suppressed by replacing period with HTML entity code `&period;` to link to literal `.md` documents.
 
 ## static RSS generation
 * This would require the non-optional use of
@@ -18,10 +28,6 @@
 * Generating an RSS file from multiple invocations of `md_index()` would also violate
 	DRY principles, as it would be tacked on before and after execution of the main `process_dir()` loop
 
-## Prevent automatic rewrite features from affecting `<pre>` blocks
-* Currently, `# comments` and `*.md` references within `<pre>` blocks are being modified and introducing page issues.
-	* Prevent `md_toc_anchor()` from affecting `# comments` within code blocks.
-
 ## implement `{MACRO}` expansion in CSS and JS files
 
 ## friendly URL scheme (non-feature)
@@ -36,7 +42,9 @@ requiring edge case exceptions in md_title and process_dir.
 These can be implemented as symlinks, but `{DOC_ROOT}` becomes a non-optional
 feature.
 
-## ~~add support for generating table of contents with inline anchor links to every heading~~ done
+# IMPLEMENTED
+
+## ~~add support for generating table of contents with inline anchor links to every heading~~
 `cmark`  doesn't support generating table of contents or even inline anchor links for headings
 
 Forcibly add support for toc's even if it's not supported in cmark.
@@ -65,10 +73,10 @@ Append `<span id="0001"><span>` to the end of `# headings` via IFS= while read -
 
 Maintain markdown list of these in {TOC}, which can be optionally added in document.
 
-## ~~fix issue where newlines and stray grave characters can cause issues with sed~~ done
+## ~~fix issue where newlines and stray grave characters can cause issues with sed~~
 `grave` characters can appear in markdown toc but it must be converted to HTML before expansion of {TOC}
 
-## ~~rewrite metadata functions as stateless filter functions~~ done
+## ~~rewrite metadata functions as stateless filter functions~~
 ~~Performance gain from reading input file only once seem negligible.
 This would be a style choice more than anything else.~~
 

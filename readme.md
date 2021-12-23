@@ -36,7 +36,7 @@ DOC_ROOT='/var/www'
 FOOTNOTE="&copy; $(date '+%Y') <your name> -- All Rights Reserved."
 ```
 From this point forward, the term "Markdown" will refer to **kagami**'s special
-superset of Markdown which includes inline `{MACROS}`.
+superset of Markdown which includes inline `{MACROS}` and use of inline HTML.
 
 # Usage
 | command line option | effect |
@@ -87,23 +87,23 @@ You can also manually link to other pages arbitrarily.
 If you link to another `*.md` document, it will be automatically converted to
 an `*.htm` link.
 
->_To suppress this behavior in finished webpages, you can write URLs pointing
->to literal `.md` documents using the `&period;` HTML entity code._
+>_To suppress this behavior in finished webpages, you can mention or link to
+> literal `.md` documents using the `&period;` HTML entity code._
 
 # Embedded Table of Contents and Anchor Links
 When writing structured content, you can embed a dynamically generated table of
 contents with navigable anchor links anywhere in your markdown using local
 macro `{TOC}`.
 
-Matching inline anchor links will be appended to every heading in your markdown
-automatically.
-```markdown
-<!-- inline anchor links will be appended automatically -->
-# hello world           <span id="hello-world"></span>
-## middle               <span id="middle"></span>
-### lesser point        <span id="lesser-point"></span>
-# second major topic    <span id="second-major-topic"></span>
+Given the following markdown structure, matching inline anchor links
+will be appended to every heading in your markdown automatically.
 
+	# hello world           <span id="hello-world"></span>
+	## middle               <span id="middle"></span>
+	### lesser point        <span id="lesser-point"></span>
+	# second major topic    <span id="second-major-topic"></span>
+
+```html
 <!-- {TOC} macro will expand to the following -->
 <div class="toc">
 * [hello world](#hello-world)
@@ -132,7 +132,7 @@ User-provided shell variables and scripts `.` (dot) sourced from
 `.kagami/macros` can extend, override or unset these at will. Subshelled
 scripts will have read-only access only.
 
-#### Modifying global macros at runtime
+#### On modifying macros at runtime
 One use case for modifying global macros is the `{DOC_ROOT}` macro, which
 expands to the working directory.
 Leaving this to the default setting allows you to generate web pages for local
