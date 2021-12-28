@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.5.4 — static microblog processor
+#v# kagami v0.5.5 — static microblog processor
 #v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -159,10 +159,29 @@ md_index() (
 	cd "$1" || return
 	for f in *.md; do
 		curr="$(cat "$f")" # load file only once
-		secs="$(echo "$curr" | md_timestamp | head -n 1)"
 		title="$(echo "$curr" | md_title "$f")";
-		if [ ! -z "$secs" ] && date="$(simple_date "$secs")"; then
-			list="$list\n$secs\t* [$title]($f) --- _${date}_"
+
+		# accept first 2 timestamps found
+		# parse timestamps using variable expansion
+		# formatting significant, makes use of newline literals
+		IFS='
+		'
+		timest="$(echo "$curr" | md_timestamp | head -n 2)"
+		for g in mtime crtime; do
+			sel="${timest#*
+}"
+			eval "$g=\"$(simple_date $sel)\""
+			timest="${timest%%
+"$sel"}"
+		done
+		unset IFS
+
+		# timest should contain oldest timestamp found
+		# and forms the basis for index sorting
+		[ "$mtime" = "$crtime" ] && unset mtime
+		if [ ! -z "$timest" ]; then
+			list="$list\n$timest\t* [$title]($f) ---"
+			list="$list _$crtime${mtime:+ <span style=\"font-size: 85%;\">(updated $mtime)</span>}_"
 		fi
 	done
 	# remove trailing newline and sort by date
@@ -184,8 +203,8 @@ md_title() (
 	echo "${title:-${1##*/}}" # filename as fallback
 )
 
-# return newline delimited list of unix timestamps derived from every page
-# comment containing well formed GNU date compatible date strings in the form
+# return sorted newline delimited list of unix timestamps derived from page
+# comments containing well formed GNU date compatible date strings in the form
 # '<!--word xxxx/xx/xx-->'
 md_timestamp() (
 	st='^<!-- *'; ed=' *-->$'
@@ -193,7 +212,7 @@ md_timestamp() (
 		| while read -r date; do
 		# return valid dates only
 		date -d "${date#* }" '+%s' 2> /dev/null
-	done
+	done | sort -n
 )
 
 # create attribute identifier name from input
@@ -313,7 +332,7 @@ process_dir() (
 			tmp="$(cat "$orig")"
 
 			# generate local environment macros
-			timest="$(echo "$tmp" | md_timestamp)"
+			timest="$(echo "$tmp" | md_timestamp | head -n 2)"
 			TITLE="$(echo "$tmp" | md_title "$new")"
 			CREATED="$($DATE_FUNCTION $(echo "$timest" | head -n 1))"
 			UPDATED="$($DATE_FUNCTION $(echo "$timest" | tail -n +2 | head -n 1))"
