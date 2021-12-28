@@ -11,7 +11,7 @@ Get started with this sample `kagami` template and read the documentation for mo
 | $$_/  $$ \$$$$$$\|  $$$$$$\  \$$$$$$\| $$$$$$\$$$$\| $$
 | $$   $$ /      $$| $$  | $$ /      $$| $$ | $$ | $$| $$
 | $$$$$$\|  $$$$$$$| $$__| $$|  $$$$$$$| $$ | $$ | $$| $$
-| $$  \$$\\$$    $$ \$$    $$ \$$    $$| $$ | $$ | $$| $$
+| $$  \$$\\$$     $$ \$$    $$ \$$    $$| $$ | $$ | $$| $$
  \$$   \$$ \$$$$$$$ _\$$$$$$$  \$$$$$$$ \$$  \$$  \$$ \$$
                    |  \__| $$
                     \$$    $$
@@ -31,6 +31,6 @@ Options `{markdown}`
 When writing structured pages, you can include a dynamically generated
 table of contents anywhere on your pages by using the built-in local `TOC` macro.
 
-Files named `index.md` will feature a dynamically generated list of other
-pages in the same directory appended to the bottom.
-
+Files named `index.md` will feature a dynamically generated list of other pages
+in the same directory containing `<!-- date XXXX/XX/XX -->` metadata tags
+appended to the bottom of this document, sorted by creation date.

@@ -4,7 +4,7 @@ html {
 	background:
 		url("sample.png"),
 		url("kagami.png") no-repeat bottom right,
-		linear-gradient(0deg, #F3C5E9, #964E9A);
+		linear-gradient(220deg, #F3C5E9, #964E9A);
 	background-blend-mode: multiply, multiply, normal;
 	background-size: auto, 300px, auto;
 	background-attachment: fixed;
@@ -12,8 +12,10 @@ html {
 
 body {
 	font-family: serif;
+	padding: 10px;
 	color: #FFFFFF;
 	text-shadow: 2px 1px #646464;
+	background: rgba(0, 0, 0, 25%);
 }
 
 a { color: #BFE2EA; text-decoration: none; }
