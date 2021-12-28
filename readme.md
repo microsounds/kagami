@@ -158,8 +158,8 @@ global and user-provided shell variables.
 | built-in | description | fallback |
 | :-- | :-- | :-- |
 | `TITLE` | Taken from first `<h1>` heading on the page. | page filename |
-| `CREATED` | Taken from earliest valid date taken from a markdown comment.<br>eg. `<!--created xx/xx/xxxx-->` | N/A |
-| `UPDATED` | Taken from second earliest valid date extracted from a markdown comment.<br>eg. `<!--updated xx/xx/xxxx-->` | N/A |
+| `CREATED` | Taken from earliest valid date taken from a markdown comment. <br>eg. `<!--created xx/xx/xxxx-->` | N/A |
+| `UPDATED` | Taken from second earliest valid date extracted from a markdown comment. <br>eg. `<!--updated xx/xx/xxxx-->` | N/A |
 | `TOC` | Anchor-linked table of contents linking to all headings found on the page. | _(optional)_ |
 
 # Installation
