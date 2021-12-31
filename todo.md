@@ -1,5 +1,5 @@
 # TODO
-List of outstanding issues.
+Wishlist for stuff to add in the future.
 
 ## Prevent automatic rewrite features from affecting `<pre>` blocks
 * Currently, `# comments` and `*.md` references within `<pre>` blocks are being modified and introducing page issues.

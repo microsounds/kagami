@@ -1,8 +1,14 @@
+<!-- github specific -->
+<img src="https://img.shields.io/badge/version-idk lol-%2363B0B0?logo=github"> <img src="https://img.shields.io/badge/license-GPLv3+-%23997ece">
+
 <img src="static/kagami.png" width="270px" align="right" alt="kagami">
 
 # kagami — static microblog processor
-This is a minimalist POSIX shell implementation of a static HTML template
-processor, designed for low-frequency Web 1.0-esque blogposting.
+<!----✂---cut-here----->
+
+This is a minimalist static HTML template processor and macro preprocessor
+written in POSIX shell, designed for low-frequency, low-effort Web 1.0-esque
+blogposting.
 
 **kagami** provides an extensible [turing tarpit](#background) for dynamically
 authoring webpages from plaintext Markdown files through an easy to use
@@ -46,6 +52,23 @@ superset of Markdown which includes inline `{MACROS}` and use of inline HTML.
 | `clean` | Recursively deletes all output files that would have been created under normal operation. |
 | `-h`, `--help` | Displays help information. |
 | `-v`, `--version` | Displays version information. |
+
+## An example working directory, or "kagami template"
+```
+/ (document root)
+├── .kagami/
+│   ├── head.htm
+│   ├── tail.htm
+│   └── macros
+└── .src/
+    ├── index.md
+    ├── about.md
+    ├── projects.md
+    └── blog/
+        ├── index.md
+        ├── 5-cute-facts-about-kagami.md
+        └── 10-mindbending-kagami-techniques.md
+```
 
 Invoking **kagami** searches the current directory and all parent directories
 above it for an existing `.kagami/` configuration and a `.src/` directory.
@@ -116,10 +139,14 @@ will be appended to every heading in your markdown automatically.
 ```
 
 # Macros
-When a `{MACRO}` is found, the brackets are removed, the resulting identifier
+When a `{MACRO}` is found in processed markdown, the brackets are removed, the resulting identifier
 is interpreted as a shell variable `$MACRO` and it's contents replace the macro
 text in-place. If the variable is empty or unset, the macro is stripped from
 the final webpage.
+
+The term _macros_ as used by this documentation can be used interchangably with
+_environment variables_ and _shell variables_ as they are one and the same as
+far as **kagami** is concerned.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
@@ -130,9 +157,15 @@ expansions such as `<br/>` if you need line breaks.
 ### Global Macros
 These are generated and exported at startup and do not change during runtime.
 
-User-provided shell variables and scripts `.` (dot) sourced from
-`.kagami/macros` can extend, override or unset these at will. Subshelled
-scripts will have read-only access only.
+User-provided shell variables and shell scripts `.` (dot) sourced from
+`.kagami/macros` can extend, override or unset these at will.
+Subshelled scripts _(including those written in languages other than shell)_ will have read-only access only.
+
+| built-in | description |
+| :-- | :-- |
+| `VERSION` | Processor name and version information. |
+| `DOC_ROOT` | Document root prefix, set to the working directory by default. |
+| `DATE_FUNCTION` | Defines a custom date function alias that takes a unix timestamp and outputs a human-readable date to stdout. A plain date function is set by default. |
 
 #### On modifying macros at runtime
 One use case for modifying global macros is the `{DOC_ROOT}` macro, which

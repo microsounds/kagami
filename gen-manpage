@@ -29,7 +29,7 @@ pandoc --version 2>&1 > /dev/null || {
 
 	# omit title first heading
 	# capitalize document headings
-	sed -E -e '1,/^#.*kagami/d' -e 's/^(# .*)/\U\1/g' < readme.md
+	sed -E -e '1,/✂/d' -e 's/^(# .*)/\U\1/g' < readme.md
 
 	# append author information
 	cat <<- EOF
