@@ -17,7 +17,11 @@ blogposting.
 authoring webpages from plaintext Markdown files through an easy to use
 templating system and macro preprocessor.
 
-Unlike other static site authoring tools, **kagami** stays out of your way and doesn't enforce a specific site layout or force you to prepend your documents with YAML-style frontmatter schemes.
+Unlike other static site authoring tools,
+**kagami** [stays out of your way](#error-handling) and doesn't enforce
+any particular site layout or demand more information from the user
+through mandatory environment variables or YAML-style frontmatter blocks
+at the top of all your documents, it's the _easy-going_ static microblog processor!
 
 ---------
 
@@ -56,7 +60,7 @@ superset of Markdown which includes inline `{MACROS}` and use of inline HTML.
 | `-h`, `--help` | Displays help information. |
 | `-v`, `--version` | Displays version information. |
 
-## An example working directory, or "kagami template"
+## An example working directory
 ```
 / (document root)
 ├── .kagami/
@@ -74,9 +78,9 @@ superset of Markdown which includes inline `{MACROS}` and use of inline HTML.
 ```
 
 Invoking **kagami** searches the current directory and all parent directories
-above it for an existing `.kagami/` configuration and a `.src/` directory.
-If found, this becomes the _**working directory**_, all operations are relative
-to this directory.
+above it for an existing `.kagami/` template and a `.src/` directory. If found,
+this becomes the _**working directory**_, all operations are relative to this
+directory.
 
 **kagami** will then recurse through the `.src/` directory and convert every
 plaintext `*.md` Markdown file into a corresponding `*.htm` file outside of
@@ -89,23 +93,26 @@ If any files within the `.kagami/` config directory have changed, all webpages
 will be regenerated.
 
 ### Error Handling
-**kagami** does very little error handling,
-Missing configuration files will give error messages, but user error will not.
+Because **kagami** doesn't get in your way, very little error handling is done,
+if at all. You can make use of as many or as few `.kagami/` template features
+as you want, **kagami** will simply warn you of missing functionality.
 
-The `.kagami/` and `.src/` directories can be empty and **kagami** might warn
-about it but won't stop you, you just won't get anything useful.
+The `.kagami/` and `.src/` directories can even be empty and **kagami** might warn
+about it but won't stop you, you won't get anything useful though.
 
-# Dynamic Indexes and Linking
+# Dynamic Indexes and Link Rewriting
 Markdown files can contain metadata tags, such as creation date or time of last
 modification, which take the permissive form `<!-- word XXXX/XX/XX -->` where
-the date string `XXXX/XX/XX` can be any valid human readable date understood by
-GNU `date`. _Spaces between `<!--` and `-->` are optional._
+the date string `XXXX/XX/XX` can be [any valid human readable date][gdate]
+understood by GNU `date`. _Spaces between `<!--` and `-->` are optional._
+
+[gdate]: https://www.gnu.org/software/coreutils/manual/html_node/Date-input-formats.html
 
 If a particular directory has an `index.md`, the resulting webpage will feature
 a dynamic list of all other webpages in the same directory sorted by creation
 date appended after your content.
 
-Omitting date information lets you exclude files from this index.
+_**Omitting date information lets you exclude files from this index.**_
 
 You can also manually link to other pages arbitrarily.
 ```html
@@ -117,6 +124,23 @@ an `*.htm` link.
 
 >_To suppress this behavior in finished webpages, you can mention or link to
 > literal `.md` documents using the `&period;` HTML entity code._
+
+# Dynamic RSS 2.0 Feed Generation
+A dynamically updated RSS 2.0 feed `rss.xml` will be generated along with your
+authored web pages at the root of the working directory if the optional macro
+`SITE_HOSTNAME` is defined at runtime.
+
+_**Items omitted from indexing will also be excluded from appearing in the RSS feed.**_
+
+`SITE_TITLE` and `SITE_DESCRIPTION` are used in the RSS `<title>` and
+`<description>` metadata fields and are optional but recommended.
+Do note that they are _"required"_ by the [RSS 2.0 spec][rss].
+
+[rss]: https://cyber.harvard.edu/rss/rss.html#requiredChannelElements
+
+* `SITE_HOSTNAME` describes a URL prefix such as your domain name in the form `https://sub.domain.name`
+* Any prefix of arbitrary directory depth, eg. `https://domain.name/sub/dir/1/2/3/4` is considered valid.
+	* _This is required to generate valid URLs for the RSS feed._
 
 # Embedded Table of Contents and Anchor Links
 When writing structured content, you can embed a dynamically generated table of
@@ -147,7 +171,7 @@ is interpreted as a shell variable `$MACRO` and it's contents replace the macro
 text in-place. If the variable is empty or unset, the macro is stripped from
 the final webpage.
 
-The term _macros_ as used by this documentation can be used interchangably with
+The term _macros_ as used by this documentation can be used interchangeably with
 _environment variables_ and _shell variables_ as they are one and the same as
 far as **kagami** is concerned.
 
@@ -181,11 +205,13 @@ You can deploy your webpages for use with an web server by placing
 `unset DOC_ROOT` in your `.kagami/macros`, it will rewrite all your intra-site URLs
 starting from the root of your web server `/`.
 
-| built-in | description |
-| :-- | :-- |
-| `VERSION` | Processor name and version information. |
-| `DOC_ROOT` | Document root prefix, set to the working directory by default. |
-| `DATE_FUNCTION` | Define a custom date function that takes a unix timestamp and outputs a human-readable date to stdout. A plain date function is set by default. |
+### User-provided Macros
+These can be provided to **kagami** at runtime to enable specific _optional_ features.
+
+| user-provided | description |
+| :-- | :--------- |
+| `SITE_HOSTNAME` | _(optional)_ Defines a site hostname prefix and is the **minimum requirement** to generate an RSS feed. <br/>_eg. `https://sub.domain.name`_ |
+| `SITE_TITLE`, `SITE_DESCRIPTION` | _(optional)_ Used for populating the `<title>` and `<description>` fields in RSS feed metadata and are _highly recommended_. |
 
 ### Local Macros
 These are uniquely generated from every processed file at runtime and override
@@ -224,14 +250,18 @@ You can run `./kagami` in this directory to build a sample website.
 **kagami** was written to fit a particular use case, mine.
 If your needs are simple, then **kagami** is simple. This isn't a full-fat
 wordpress-style blog generator.
-Management of static elements such as images, client-side Javascript,
+Management of static elements such as images, client-side scripting,
 stylesheets and site structure fall outside of the scope of this tool.
+
+RSS feeds are reproducible, `lastBuildDate` matches the `pubDate` of the most
+recent `item` found. This is to avoid the issue of dirtying a `git` worktree
+just by running `kagami`
 
 Several scrapped iterations of this tool were previously written as a portable
 makefile using a C preprocessor and later, general purpose macro preprocessor
 GNU `m4`.
 `cpp` chokes on C syntax being used incorrectly, `m4` chokes on stray grave
-symbols, and probably other things too.
+symbols and common dictionary words like `divert` and `shift` as these are `m4` syntax.
 
 I ended up implementing elements from both, along with the ability to add custom functionality
 as part of the **kagami** template without making changes to the tool itself.
