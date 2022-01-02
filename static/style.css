@@ -25,6 +25,8 @@ a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F
 .nav li { font-size: 18px; display: inline; }
 .nav li:not(:last-child):after { content: " | "; } 
 
+.icon { height: 0.75em; }
+
 .index { font-size: 17px; }
 
 .toc {

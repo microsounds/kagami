@@ -1,16 +1,23 @@
-<!doctype html>
+<!DOCTYPE html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="shortcut icon" type="image/jpeg" href="{DOC_ROOT}/static/favicon.jpg">
-	<link rel="stylesheet" type="text/css" href="{DOC_ROOT}/static/style.css">
-	<title>{TITLE} - {SITE_NAME}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<link rel="shortcut icon" type="image/jpeg" href="{DOC_ROOT}/static/favicon.jpg"/>
+	<link rel="stylesheet" type="text/css" href="{DOC_ROOT}/static/style.css"/>
+	<link rel="alternate" type="application/rss+xml" href="{DOC_ROOT}/rss.xml" title="{SITE_TITLE}"/>
+	<title>{TITLE} • {SITE_TITLE}</title>
 </head>
 <body>
 <div class="nav">
-	<a href="{DOC_ROOT}/index.htm"><span class="title">♨️{SITE_NAME}</span></a>
+	<a href="{DOC_ROOT}/index.htm"><span class="title">♨️{SITE_TITLE}</span></a>
 	<br/>
 	<li><a href="{DOC_ROOT}/blog/index.htm">Blog</a></li>
+	<li>
+		<a href="{DOC_ROOT}/rss.xml">
+			<span>RSS Feed</span>
+			<img class="icon" src="{DOC_ROOT}/static/rss.svg">
+		</a>
+	</li>
 	<li><a href="about:blank">Links</a></li>
 	<li><a href="about:blank">To</a></li>
 	<li><a href="about:blank">Other</a></li>

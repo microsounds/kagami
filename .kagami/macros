@@ -1,7 +1,13 @@
 # DOC_ROOT prefixes absolute static resource URLs in example templates.
-# Kagami sets DOC_ROOT to working dir by default.
+# kagami sets DOC_ROOT to working dir by default.
 # Uncomment to make URLs start from /.
 #unset DOC_ROOT
 
-SITE_NAME='Kagami Example Template'
+# these are recommended if you want to generate a valid RSS feed
+# only SITE_HOSTNAME is required though
+SITE_TITLE='Kagami Example Template'
+SITE_DESCRIPTION="A sample template built from $VERSION"
+SITE_HOSTNAME='https://sub.example.name'
+
+# current year
 YEAR="$(date '+%Y')"

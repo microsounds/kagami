@@ -1,4 +1,5 @@
 # Your Homepage
+
 Now you're using `kagami` like a pro!
 
 Get started with this sample `kagami` template and read the documentation for more information.
@@ -18,7 +19,7 @@ Get started with this sample `kagami` template and read the documentation for mo
                      \$$$$$$
 ```
 
-## This site was built using the following parameters:
+## This site was built using the following parameters
 Options `{markdown}`
 
 * Document Root: `{DOC_ROOT}`
@@ -26,6 +27,7 @@ Options `{markdown}`
 * Source Dir: `{source_dir}`
 * Config Dir: `{config_dir}`
 
+## A note on dynamic features
 {TOC}
 
 When writing structured pages, you can include a dynamically generated
@@ -34,3 +36,5 @@ table of contents anywhere on your pages by using the built-in local `TOC` macro
 Files named `index.md` will feature a dynamically generated list of other pages
 in the same directory containing `<!-- date XXXX/XX/XX -->` metadata tags
 appended to the bottom of this document, sorted by creation date.
+
+They will also be appended to the RSS feed `{DOC_ROOT}/rss.xml`.
