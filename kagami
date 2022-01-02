@@ -61,6 +61,9 @@ set_spinner() {
 }
 clear_spinner() { kill "$SPINNER"; printf '\r\33[K'; }
 
+# define valid kagami {MACRO} identifier regex
+mformat='[A-Za-z0-9_]+'
+
 # define non-colliding single-byte sed delimiter
 # this character CANNOT appear in expanded macros or processed
 # markdown documents under any circumstances
@@ -145,12 +148,16 @@ clean_file() (
 #
 ## DATE ROUTINES
 #
-# simple month and year timestamp
+# human readable date used for indexing
+# eg. January 2020
 simple_date() (
 	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
 	date -d "1970-01-01 UTC $1 seconds" '+%B %Y'
 )
 
+# default fallback date function used by CREATED, UPDATED
+# override with DATE_FUNCTION
+# eg. 1 Jan 2020
 full_date() (
 	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
 	date -d "1970-01-01 UTC $1 seconds" '+%d %b %Y'
@@ -200,17 +207,24 @@ md_index() (
 	printf '\n%s\n' '</div>'
 )
 
-# strip stray markdown/HTML syntax from input
+# sanitize stray syntax from input
+# specifically, markdown headings, markdown inline images,
+# kagami macros and HTML inline syntax
 md_strip() (
-	sed -e 's/^# //' -e 's/<[^>]*>//g'
+	sed -E \
+		-e 's/^# //' \
+		-e 's/!\[\w+\]//g' \
+		-e "s/\{$mformat\}//g" \
+		-e 's/<[^>]*>//g'
 )
 
-# get page title from first '<h1>' heading in markdown file
-# strip stray inline html syntax
+# get page title from first <h1> '# heading' in markdown file
 # (optional) accepts filename argument as fallback
 md_title() (
 	title="$(grep '^# ' < /dev/stdin | md_strip | head -n 1)"
-	echo "${title:-${1##*/}}" # filename as fallback
+	fallback="${1##*/}"       # filename as fallback
+	fallback="${fallback%.*}" # strip extension
+	echo "${title:-$fallback}"
 )
 
 # return sorted newline delimited list of unix timestamps derived from page
@@ -274,9 +288,6 @@ md_toc_anchor() (
 #
 ## MACROS
 #
-# valid macro identifiers
-mformat='[A-Za-z0-9_]+'
-
 # global environment macros
 export VERSION="$("$0" --version | grep '^kagami')"
 export DOC_ROOT="$working_dir"
