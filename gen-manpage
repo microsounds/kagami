@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# generates a man file from README using pandoc
+# generates a man file from readme.md using pandoc
 
 pandoc --version 2>&1 > /dev/null || {
 	printf '\e[1m%s\e[0m\n' \
@@ -8,7 +8,8 @@ pandoc --version 2>&1 > /dev/null || {
 }
 
 {
-	# generate man page information
+	# generate man page frontmatter
+	# troff man header: .TH "title" "section no." "date" "footer" "header"
 	ver="$(./kagami --version | egrep -o 'v([0-9].?)+' | head -n 1)"
 	cat <<- EOF
 		---
@@ -27,8 +28,8 @@ pandoc --version 2>&1 > /dev/null || {
 		# DESCRIPTION
 	EOF
 
-	# omit title first heading
-	# capitalize document headings
+	# omit github specific headings
+	# capitalize <h1> document headings
 	sed -E -e '1,/✂/d' -e 's/^(# .*)/\U\1/g' < readme.md
 
 	# append author information
@@ -38,4 +39,3 @@ pandoc --version 2>&1 > /dev/null || {
 		$(./kagami --version | head -n 2 | tail -n 1)
 	EOF
 } | pandoc - -s -t man -o -
-

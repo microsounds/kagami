@@ -1,9 +1,12 @@
 <!-- github specific -->
-<img src="https://img.shields.io/badge/version-idk lol-%2363B0B0?logo=github"> <img src="https://img.shields.io/badge/license-GPLv3+-%23997ece">
+![ver] ![gpl]
 
-<img src="static/kagami.png" width="270px" align="right" alt="kagami">
+[ver]: https://img.shields.io/badge/version-idk%20lol-%2363B0B0?logo=github
+[gpl]: https://img.shields.io/badge/license-GPLv3+-%23997ECE
 
 # kagami — static microblog processor
+
+<img src="static/kagami.png" width="270px" align="right" alt="kagami">
 <!----✂---cut-here----->
 
 This is a minimalist static HTML template processor and macro preprocessor
@@ -48,7 +51,7 @@ superset of Markdown which includes inline `{MACROS}` and use of inline HTML.
 
 # Usage
 | command line option | effect |
-| :-- | :-- |
+| :--- | :--------- |
 | `clean` | Recursively deletes all output files that would have been created under normal operation. |
 | `-h`, `--help` | Displays help information. |
 | `-v`, `--version` | Displays version information. |
@@ -132,8 +135,8 @@ will be appended to every heading in your markdown automatically.
 <!-- {TOC} macro will expand to the following -->
 <div class="toc">
 * [hello world](#hello-world)
-	* [middle](#middle)
-		* [lesser point](#lesser-point)
+    * [middle](#middle)
+        * [lesser point](#lesser-point)
 * [second major topic](#second-major-topic)
 </div>
 ```
@@ -162,7 +165,7 @@ User-provided shell variables and shell scripts `.` (dot) sourced from
 Subshelled scripts _(including those written in languages other than shell)_ will have read-only access only.
 
 | built-in | description |
-| :-- | :-- |
+| :-- | :--------- |
 | `VERSION` | Processor name and version information. |
 | `DOC_ROOT` | Document root prefix, set to the working directory by default. |
 | `DATE_FUNCTION` | Defines a custom date function alias that takes a unix timestamp and outputs a human-readable date to stdout. A plain date function is set by default. |
@@ -188,12 +191,12 @@ starting from the root of your web server `/`.
 These are uniquely generated from every processed file at runtime and override
 global and user-provided shell variables.
 
-| built-in | description | fallback |
-| :-- | :-- | :-- |
-| `TITLE` | Taken from first `<h1>` heading on the page. | page filename |
-| `CREATED` | Taken from earliest valid date taken from a markdown comment. <br>eg. `<!--created xx/xx/xxxx-->` | N/A |
-| `UPDATED` | Taken from second earliest valid date extracted from a markdown comment. <br>eg. `<!--updated xx/xx/xxxx-->` | N/A |
-| `TOC` | Anchor-linked table of contents linking to all headings found on the page. | _(optional)_ |
+| built-in | description |
+| :-- | :--------- |
+| `TITLE` | Taken from first markdown `<h1>` heading on the page, uses page filename as fallback. |
+| `CREATED` | Human readable timestamp taken from earliest valid date found in metadata comment. <br/>_eg. `<!--created xx/xx/xxxx-->`_ |
+| `UPDATED` | Human readable timestamp taken from second earliest valid date found in metadata comment. <br/>_eg. `<!--updated xx/xx/xxxx-->`_ |
+| `TOC` | _(optional)_ Anchor-linked table of contents linking to all headings found on the page. |
 
 # Installation
 **kagami** is a single shell script, you can keep it with your webpages at the
