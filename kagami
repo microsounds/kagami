@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.5.5 — static microblog processor
-#v# (c) 2021 microsounds <https://github.com/microsounds>, GPLv3+
+#v# kagami v0.6 — static microblog processor
+#v# (c) 2022 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -163,6 +163,65 @@ full_date() (
 	date -d "1970-01-01 UTC $1 seconds" '+%d %b %Y'
 )
 
+# RFC 5322 timestamps used by RSS feeds
+rfc_date() (
+	[ ! -z "$1" ] || [ "$1" -eq "$1" ] 2> /dev/null || return 1
+	date -d "1970-01-01 UTC $1 seconds" -R
+)
+
+#
+#
+## RSS FEED ROUTINES
+#
+# generate RSS feed headers
+rss_init() (
+	if [ ! -z "$SITE_HOSTNAME" ]; then
+		# guess permalink to RSS feed
+		feed_link="$SITE_HOSTNAME/${RSS_FEED#"$working_dir/"}"
+
+		# generate RSS 2.0 feed only if user-provided SITE_HOSTNAME is set
+		cat <<- EOF > "$RSS_FEED"
+			<?xml version="1.0" encoding="utf-8"?>
+			<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+			<channel>
+			<ttl>1</ttl>
+			<generator>$VERSION</generator>
+			<docs>http://blogs.law.harvard.edu/tech/rss</docs>
+			<atom:link href="$feed_link" rel="self" type="application/rss+xml"/>
+			<link>$SITE_HOSTNAME</link>
+		EOF
+
+		# user provided macros SITE_TITLE and SITE_DESCRIPTION
+		# recommended but not required
+		[ ! -z "$SITE_TITLE" ] && \
+			echo "<title>$SITE_TITLE</title>" >> "$RSS_FEED"
+		[ ! -z "$SITE_DESCRIPTION" ] && \
+			echo "<description>$SITE_DESCRIPTION</description>" >> "$RSS_FEED"
+	else
+		( mode='!'; mesg 'Skipped RSS feed because SITE_HOSTNAME is unset.'; )
+	fi
+)
+
+# finalize RSS feed
+# set lastBuildDate to latest pubDate found
+rss_close() (
+	if [ -f "$RSS_FEED" ]; then
+		cat <<- EOF >> "$RSS_FEED"
+			</channel>
+			</rss>
+		EOF
+
+		# insert lastBuildDate before items as per RSS 2.0 spec in-place
+		latest="$(fgrep '<pubDate>' | sed -E 's,</?\w+>,,g' \
+			| xargs -I '{}' date -d '{}' '+%s' | sort -nr | head -n 1 \
+			| xargs -I '{}' date -d '1970-01-01 UTC {} seconds' -R)" < "$RSS_FEED"
+		{	rm "$RSS_FEED"
+			sed "/^<channel>/a <lastBuildDate>$latest</lastBuildDate>" > "$RSS_FEED"
+		} < "$RSS_FEED"
+		( mode='+'; mesg "$RSS_FEED"; )
+	fi
+)
+
 #
 #
 ## MARKDOWN ROUTINES
@@ -171,7 +230,8 @@ full_date() (
 # generate a markdown index of files in the same directory sorted by
 # descending creation date, files without timestamps will not show up
 # on this list
-# file URLs are relative to index.md for now
+# markdown linked URLs are relative to index.md for now
+# indexed files are also appended to the RSS feed if it exists
 md_index() (
 	cd "$1" || return
 	for f in *.md; do
@@ -187,21 +247,44 @@ md_index() (
 		for g in mtime crtime; do
 			sel="${timest#*
 }"
+			# human readable
 			eval "$g=\"$(simple_date $sel)\""
+			# keep timestamps in *_raw
+			eval "${g}_raw=\"$sel\""
 			timest="${timest%%
 "$sel"}"
 		done
-		unset IFS
+		# if document has no mtime
+		[ "$mtime" = "$crtime" ] && unset mtime mtime_raw
+		unset IFS timest
 
-		# timest should contain oldest timestamp found
-		# and forms the basis for index sorting
-		[ "$mtime" = "$crtime" ] && unset mtime
-		if [ ! -z "$timest" ]; then
-			list="$list\n$timest\t* [$title]($f) ---"
+		# crtime forms the basis for index sorting
+		if [ ! -z "$crtime" ]; then
+			list="$list\n$crtime_raw\t* [$title]($f) ---"
 			list="$list _$crtime${mtime:+ <span style=\"font-size: 85%;\">(updated $mtime)</span>}_"
+
+			# append to RSS feed if it exists
+			# guess permalink to current file
+			# use mtime as pubDate if set
+			if [ ! -z "$SITE_HOSTNAME" ] && [ -f "$RSS_FEED" ]; then
+				link="${PWD#"$source_dir"}/${f%.*}.htm"
+				link="$SITE_HOSTNAME/${link#/}"
+				cat <<- EOF >> "$RSS_FEED"
+					<item>
+						<title>$title</title>
+						<description>
+							<![CDATA[$(echo "$curr" | md_summary)]]>
+							<![CDATA[<br/>Read more at <a href="$link">$link</a>.]]>
+						</description>
+						<link>$link</link>
+						<guid isPermaLink="true">$link</guid>
+						<pubDate>$(rfc_date "${mtime_raw:-$crtime_raw}")</pubDate>
+					</item>
+				EOF
+			fi
 		fi
 	done
-	# remove trailing newline and sort by date
+	# remove trailing newline and sort by crtime
 	printf '%s\n\n' '<div class="index">'
 	echo "$list" | grep . | sort -nr | cut -f2
 	printf '\n%s\n' '</div>'
@@ -237,6 +320,14 @@ md_timestamp() (
 		# return valid dates only
 		date -d "${date#* }" '+%s' 2> /dev/null
 	done | sort -n
+)
+
+# generate plaintext blurb from first 80 words
+# remove headings and whitespace, extract plaintext from raw HTML
+md_summary() (
+	sed -E '/^#/d' | grep . | $markdown \
+		| md_strip | tr -s ' ' '\n' | head -n 80 | tr '\n' ' '
+	printf '%s' '[..]'
 )
 
 # create attribute identifier name from input
@@ -296,16 +387,21 @@ export DATE_FUNCTION='full_date' # fallback date function
 # import user-provided macros
 [ -f "$config_dir/macros" ] && . "$config_dir/macros"
 
-# report on global state
-[ -z "$clean" ] && for f in DOC_ROOT; do
-	eval "val=\${$f}"
-	( mode="$f"; mesg "${val:-(unset)}"; )
-done
-
 #
 #
 ## MAIN ROUTINES
 #
+# report on global state
+[ -z "$clean" ] && for f in DOC_ROOT SITE_HOSTNAME; do
+	eval "val=\${$f}"
+	( mode="$f"; mesg "${val:-(unset)}"; )
+done
+
+# initialize RSS feed if not in clean mode
+RSS_FEED="$working_dir/rss.xml"
+[ -z "$clean" ] && rss_init || clean_file "$RSS_FEED"
+trap 'rss_close' 0 1 2 3 6 15
+
 # get the filename of the newest file in the config directory
 config_newest="$config_dir/$(newest_file "$config_dir")"
 
@@ -375,6 +471,7 @@ process_dir() (
 				# cmark aggressively escapes macro identifiers in inline links
 				echo "$tmp" | $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
 				# regenerate index for this directory
+				# append to RSS feed
 				if [ ! -z "$index" ]; then
 					md_index "${orig%/*}" | $markdown
 				fi
