@@ -40,24 +40,26 @@ esac; done
 ## GLOBAL / ERROR CHECKING
 #
 mode='error'
-mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for prompts?
+mesg_st() { printf '%s%s' "${mode:+[$mode] }" "$@"; } # for overwriting
 mesg() { mesg_st "$@"; printf '\n'; }
 quit() { mesg "$@, exiting." 1>&2; exit 1; }
 require() { command -v "$1" > /dev/null; }
 
-# launches spinning progress indicator
+# announce created files with progress indicator
 # sets global variable SPINNER indicating pid of current spinner
 set_spinner() {
+	mode=' '; mesg_st "$1";
+	printf '\r'
 	while :; do
 		for f in '\' '|' '/' '-'; do
-			( mode="$f"; mesg_st "$1"; )
+			mode="$f"; mesg_st;
 			printf '\r'
 			sleep 0.05
 		done
 	done &
 	SPINNER="$!"
 }
-clear_spinner() { kill "$SPINNER"; printf '\r'; }
+clear_spinner() { kill "$SPINNER"; printf '\r\33[K'; }
 
 # define non-colliding single-byte sed delimiter
 # this character CANNOT appear in expanded macros or processed
@@ -87,12 +89,12 @@ markdown="$cmark $opts"
 # any dir or parent thereof that contains the following dirs will
 # be considered the working directory.
 # all operations are relative to this dir.
-config='.kagami' # configuration directory
+config='.kagami'  # configuration directory
 source='.src'     # source markdown documents
 
-# Kagami will run only if the 2 dirs described above actually exist,
-# even if they're empty. Kagami tries to be fault-tolerant when convenient.
-# Missing files aren't an issue, Kagami will only complain about it.
+# kagami will run only if the 2 dirs described above actually exist,
+# even if they're empty. kagami tries to be fault-tolerant when convenient.
+# Missing files aren't an issue, kagami will only complain about it.
 working_dir="$PWD"
 while [ ! -z "$working_dir" ] && [ ! -d "$working_dir/$config" ]; do
 	working_dir="${working_dir%/*}"
@@ -106,7 +108,8 @@ source_dir="$working_dir/$source"
 
 config_dir="$working_dir/$config"
 for f in head.htm tail.htm macros; do
-	[ -f "$config_dir/$f" ] || ( mode='!'; mesg "Expected '$config_dir/$f'"; )
+	[ -f "$config_dir/$f" ] ||
+		( mode='!'; mesg "Expected to find '$config_dir/$f'"; )
 done
 
 unset mode
