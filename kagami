@@ -134,6 +134,13 @@ newest_file() (
 	echo "$file"
 )
 
+# clean mode
+# announce filenames before deleting
+clean_file() (
+	[ -f "$1" ] && ( mode='-'; mesg "$1"; )
+	rm -rf "$1"
+)
+
 #
 #
 ## DATE ROUTINES
@@ -311,8 +318,7 @@ process_dir() (
 		# delete output files that would have been generated under
 		# normal operation if they exist
 		if [ ! -z "$clean" ]; then
-			[ -f "$new" ] && ( mode='-'; mesg "$new"; )
-			rm -rf "$new"
+			clean_file "$new"
 			continue
 		fi
 
