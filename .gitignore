@@ -1,0 +1,4 @@
+# build artifacts
+*.xml
+*.htm
+! .kagami/*.htm
