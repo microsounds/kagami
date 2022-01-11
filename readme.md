@@ -239,9 +239,10 @@ You can run `./kagami` in this directory to build a sample website.
 # Requirements
 * Any POSIX-compatible shell
 * GNU date — Part of GNU coreutils, required for date conversion routines.
-* [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML converter
-* [cmark-gfm](https://github.com/github/cmark-gfm) *(optional)* — cmark with GitHub Extensions
-	* **kagami** will fall back to standard cmark if not available.
+* [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML processor
+* [cmark-gfm](https://github.com/github/cmark-gfm) *(preferred)* — `cmark` with GitHub Extensions
+	* _Adds support for inline footnotes, tables, strikethrough and autolinking URLs._
+		* _**kagami** will fall back to standard `cmark` if not available._
 * pandoc *(optional)* — Used during installation, creates an online manual page from this document.
 
 # Background
