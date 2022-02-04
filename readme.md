@@ -142,6 +142,10 @@ Do note that they are _"required"_ by the [RSS 2.0 spec][rss].
 * Any prefix of arbitrary directory depth, eg. `https://domain.name/sub/dir/1/2/3/4` is considered valid.
 	* _This is required to generate valid URLs for the RSS feed._
 
+RSS feeds are reproducible, `lastBuildDate` matches the `pubDate` of the most
+recent `item` found. This is to avoid the issue of dirtying a `git` worktree
+simply because the `lastBuildDate` value changed.
+
 # Embedded Table of Contents and Anchor Links
 When writing structured content, you can embed a dynamically generated table of
 contents with navigable anchor links anywhere in your markdown using local
@@ -238,25 +242,24 @@ You can run `./kagami` in this directory to build a sample website.
 
 # Requirements
 * Any POSIX-compatible shell
-* GNU date — Part of GNU coreutils, required for date conversion routines.
+* GNU date — Part of GNU coreutils, required for date conversion routines
 * [cmark](https://github.com/commonmark/cmark) — CommonMark Markdown to HTML processor
 * [cmark-gfm](https://github.com/github/cmark-gfm) *(preferred)* — `cmark` with GitHub Extensions
 	* _Adds support for inline footnotes, tables, strikethrough and autolinking URLs._
 		* _**kagami** will fall back to standard `cmark` if not available._
-* pandoc *(optional)* — Used during installation, creates an online manual page from this document.
+* pandoc *(optional)* — Creates an online manual page from this document if available during installation
 
 # Background
 >**kagami** (かがみ) is weeb for *mirror* (鏡)
 
 **kagami** was written to fit a particular use case, mine.
-If your needs are simple, then **kagami** is simple. This isn't a full-fat
-wordpress-style blog generator.
-Management of static elements such as images, client-side scripting,
-stylesheets and site structure fall outside of the scope of this tool.
 
-RSS feeds are reproducible, `lastBuildDate` matches the `pubDate` of the most
-recent `item` found. This is to avoid the issue of dirtying a `git` worktree
-just by running `kagami`
+If your needs are simple, then **kagami** is simple, the aim of this project is
+not to be a full service Wordpress or Jekyll-style blog generator.
+It simply automates the things I wasn't willing to do by hand.
+
+Management of static elements such as multimedia assets, client-side scripting,
+stylesheets and site structure fall outside of the scope of this tool.
 
 Several scrapped iterations of this tool were previously written as a portable
 makefile using a C preprocessor and later, general purpose macro preprocessor
@@ -269,7 +272,7 @@ as part of the **kagami** template without making changes to the tool itself.
 
 # Example
 My [personal site](https://microsounds.github.io) is generated using **kagami** from
-the **kagami** template located [here](https://github.com/microsounds/microsounds.github.io).
+the **kagami** template and markdown sources located [here](https://github.com/microsounds/microsounds.github.io).
 
 # License
 GNU General Public License version 3 or later.
