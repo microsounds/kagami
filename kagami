@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.6 — static microblog processor
+#v# kagami v0.6.1 — static microblog processor
 #v# (c) 2022 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -453,10 +453,8 @@ process_dir() (
 
 			# optional macro TOC
 			# generate markdown table of contents
-			# append inline anchors to markdown document
 			echo "$tmp" | fgrep -q '{TOC}' && {
 				TOC="$(echo "$tmp" | md_toc | $markdown)"
-				tmp="$(echo "$tmp" | md_toc_anchor)"
 			}
 
 			# { concat; } | { macro; } > output
@@ -466,8 +464,11 @@ process_dir() (
 				cat "$config_dir/head.htm"
 				echo '<!--{VERSION}-->'
 
+				# append inline anchors to markdown document
 				# cmark aggressively escapes macro identifiers in inline links
-				echo "$tmp" | $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
+				echo "$tmp" | md_toc_anchor \
+					| $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
+
 				# regenerate index for this directory
 				# append to RSS feed
 				if [ ! -z "$index" ]; then
