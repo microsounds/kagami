@@ -241,8 +241,6 @@ md_index() (
 		# accept first 2 timestamps found
 		# parse timestamps using variable expansion
 		# formatting significant, makes use of newline literals
-		IFS='
-		'
 		timest="$(echo "$curr" | md_timestamp | head -n 2)"
 		for g in mtime crtime; do
 			sel="${timest#*
@@ -256,7 +254,7 @@ md_index() (
 		done
 		# if document has no mtime
 		[ "$mtime" = "$crtime" ] && unset mtime mtime_raw
-		unset IFS timest
+		unset timest
 
 		# crtime forms the basis for index sorting
 		if [ ! -z "$crtime" ]; then
@@ -340,7 +338,7 @@ md_toc_id() (
 # from from all headings in markdown document
 md_toc() (
 	IFS='
-	'
+'
 	printf '%s\n\n' '<div class="toc">'
 	echo 'Table of Contents'
 	while read -r line; do
@@ -363,14 +361,14 @@ md_toc() (
 # append anchor id to every heading in markdown document
 md_toc_anchor() (
 	IFS='
-	'
+'
 	while read -r line; do
 		case "$line" in
 			\#*)
 				heading="${line#* }"
 				printf '%s<span id="%s"></span>\n' \
 					"$line" "$(echo "$heading" | md_toc_id)";;
-			*) echo "$line"
+			*) printf '%s\n' "$line"
 		esac
 	done < /dev/stdin
 )
