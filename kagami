@@ -274,7 +274,7 @@ md_index() (
 						<title>$title</title>
 						<description>
 							<![CDATA[$(echo "$curr" | md_summary)]]>
-							<![CDATA[<br/>Read more at <a href="$link">$link</a>.]]>
+							<![CDATA[<br/>Read more at <a href="$link">$link</a>]]>
 						</description>
 						<link>$link</link>
 						<guid isPermaLink="true">$link</guid>
