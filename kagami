@@ -67,7 +67,7 @@ mformat='[A-Za-z0-9_]+'
 # define non-colliding single-byte sed delimiter
 # this character CANNOT appear in expanded macros or processed
 # markdown documents under any circumstances
-delim="$(printf '\01')" # non-printable 0x01
+delim='' # non-printable literal 0x01
 
 # require GNU date from GNU coreutils
 date --version | fgrep -q 'GNU' || quit "GNU date is required"
