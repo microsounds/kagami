@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.6.1 — static microblog processor
+#v# kagami v0.6.2 — static microblog processor
 #v# (c) 2022 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -76,8 +76,9 @@ date --version | fgrep -q 'GNU' || quit "GNU date is required"
 # prefer cmark-gfm, fallback to standard cmark if not found.
 cmark='cmark-gfm'; opts='--smart'
 if require "$cmark"; then
-	# enable github flavored markdown extensions
-	for f in --unsafe footnotes table strikethrough autolink; do
+	# enable github flavored markdown extensions and flags
+	for f in --unsafe --table-prefer-style-attributes \
+		footnotes table strikethrough autolink; do
 		case $f in
 			-*) opts="$opts $f";;
 			*) opts="$opts -e $f"
