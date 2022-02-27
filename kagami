@@ -70,7 +70,11 @@ mformat='[A-Za-z0-9_]+'
 delim='' # non-printable literal 0x01
 
 # require GNU date from GNU coreutils
+# assert 64-bit date support
 date --version | fgrep -q 'GNU' || quit "GNU date is required"
+date -d "1970-01-01 UTC $(echo '2^31' | bc) seconds" > /dev/null 2>&1 ||
+	( mode='!';
+		mesg '32-bit GNU date will not support dates beyond Jan 19, 2038'; )
 
 # select markdown utility
 # prefer cmark-gfm, fallback to standard cmark if not found.
