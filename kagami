@@ -303,7 +303,7 @@ md_strip() (
 # get page title from first <h1> '# heading' in markdown file
 # (optional) accepts filename argument as fallback
 md_title() (
-	title="$(grep '^# ' < /dev/stdin | md_strip | head -n 1)"
+	title="$(grep '^# ' | md_strip | head -n 1)"
 	fallback="${1##*/}"       # filename as fallback
 	fallback="${fallback%.*}" # strip extension
 	echo "${title:-$fallback}"
@@ -314,7 +314,7 @@ md_title() (
 # '<!--word xxxx/xx/xx-->'
 md_timestamp() (
 	st='^<!-- *'; ed=' *-->$'
-	grep "$st" < /dev/stdin | sed -e "s/$st//" -e "s/$ed//" \
+	grep "$st" | sed -e "s/$st//" -e "s/$ed//" \
 		| while read -r date; do
 		# return valid dates only
 		date -d "${date#* }" '+%s' 2> /dev/null
@@ -355,7 +355,7 @@ md_toc() (
 					"$prefix" "$(echo "$heading" | md_strip)" \
 					"$(echo "$heading" | md_toc_id)";;
 		esac
-	done < /dev/stdin
+	done
 	printf '\n%s\n' '</div>'
 )
 
@@ -371,7 +371,7 @@ md_toc_anchor() (
 					"$line" "$(echo "$heading" | md_toc_id)";;
 			*) printf '%s\n' "$line"
 		esac
-	done < /dev/stdin
+	done
 )
 
 #
@@ -482,7 +482,7 @@ process_dir() (
 				script='s,\.md,\.htm,g;'
 
 				# queue macro substitutions into a single sed invocation
-				tmp="$(cat /dev/stdin)"
+				tmp="$(cat)"
 				for ext in \
 					$(echo "$tmp" | egrep -o "\{$mformat\}" | sort | uniq); do
 					# strip braces
