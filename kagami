@@ -340,16 +340,17 @@ md_toc_id() (
 md_toc() (
 	IFS='
 '
+	# cmark aggressively wraps some inline <div> elements with <p> tags
 	printf '%s\n\n' '<div class="toc">'
 	echo 'Table of Contents'
 	while read -r line; do
 		case "$line" in
 			\#*)
 				# convert h1-6 markdown headings to
-				# their equivalent as a space indented bullet list
+				# their equivalent as a tab indented bullet list
 				prefix="$(echo "${line% *}" | tr -cd '#')"
-				prefix="$(tr '\0' ' ' < /dev/zero \
-					| dd count=2 bs=$((${#prefix} - 1)) 2> /dev/null)"
+				prefix="$(tr '\0' '	' < /dev/zero \
+					| dd count=1 bs=$((${#prefix} - 1)) 2> /dev/null)"
 				heading="${line#* }"
 				printf '%s* [%s](#%s)\n' \
 					"$prefix" "$(echo "$heading" | md_strip)" \
