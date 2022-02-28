@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-#v# kagami v0.6.3 — static microblog processor
+#v# kagami v0.6.4 — static microblog processor
 #v# (c) 2022 microsounds <https://github.com/microsounds>, GPLv3+
 #
 # This program is free software; you can redistribute it and/or
@@ -344,7 +344,6 @@ md_toc_id() (
 md_toc() (
 	IFS='
 '
-	# cmark aggressively wraps some inline <div> elements with <p> tags
 	printf '%s\n\n' '<div class="toc">'
 	echo 'Table of Contents'
 	while read -r line; do
@@ -459,7 +458,7 @@ process_dir() (
 
 			# optional macro TOC
 			# generate markdown table of contents
-			# escape newlines to preserve during macro expansion
+			# escape newlines to preserve them in final markup
 			echo "$tmp" | fgrep -q '{TOC}' && {
 				TOC="$(echo "$tmp" | md_toc | $markdown \
 					| sed -E 's/$/\\\\n/g' | tr -d '\n')"
@@ -474,8 +473,11 @@ process_dir() (
 
 				# append inline anchors to markdown document
 				# cmark aggressively escapes macro identifiers in inline links
-				echo "$tmp" | md_toc_anchor \
-					| $markdown | sed -e 's/%7B/{/g' -e 's/%7D/}/g'
+				# prevent cmark from treating lone macros as new paragraphs
+				# - macros used this way tend to be block level <div> elements
+				echo "$tmp" | md_toc_anchor | $markdown \
+					| sed -E -e 's/%7B/{/g' -e 's/%7D/}/g' \
+						-e "s,^<p>(\{$mformat\})</p>$,\1,g"
 
 				# regenerate index for this directory
 				# append to RSS feed
@@ -488,7 +490,7 @@ process_dir() (
 				# convert inline links to other markdown files
 				script='s,\.md,\.htm,g;'
 
-				# queue macro substitutions into a single sed invocation
+				# condense macro substitutions into a single sed invocation
 				tmp="$(cat)"
 				for ext in \
 					$(echo "$tmp" | egrep -o "\{$mformat\}" | sort | uniq); do
