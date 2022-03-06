@@ -181,9 +181,7 @@ far as **kagami** is concerned.
 
 Only the characters `A-Za-z0-9_` can be used as macro identifiers.
 
-Expanded `{MACROS}` cannot contain `\n` newlines, they will be stripped by the
-preprocessor. This is a limitation of `sed`, use inline HTML in macro
-expansions such as `<br/>` if you need line breaks.
+Expanded `{MACROS}` can contain newlines, they will be escaped by the preprocessor and will appear in the final markup.
 
 ### Global Macros
 These are generated and exported at startup and do not change during runtime.

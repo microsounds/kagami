@@ -11,3 +11,11 @@ SITE_HOSTNAME='https://sub.example.name'
 
 # current year
 YEAR="$(date '+%Y')"
+
+# multi-line macros
+ANNOUNCEMENT='<div style="background-color: #8800883C; margin: 10px; text-align: center;">
+
+<h1>Did you know you can use multi-line macros with inline HTML?</h1>
+<p>Check out <code>.kagami/macros</code> for ideas.</p>
+
+</div>'
