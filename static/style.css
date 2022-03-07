@@ -22,6 +22,7 @@ a { color: #BFE2EA; text-decoration: none; }
 a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F0; }
 
 .title { font-weight: bold; font-size: 25px; }
+.nav ul { padding: 0; margin: 0; }
 .nav li { font-size: 18px; display: inline; }
 .nav li:not(:last-child):after { content: " | "; } 
 
@@ -35,3 +36,5 @@ a:hover { color: transparent; text-decoration: none; text-shadow: 0 0 3px #F0F0F
 	border: 4px solid #CCC;
     padding: 3px 10px 3px 10px;
 }
+
+.footer { font-size: 80%; }
