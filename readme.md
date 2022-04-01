@@ -1,13 +1,16 @@
 <!-- github specific -->
-![ver] ![gpl]
+[![ver]](https://github.com/microsounds/kagami/tags)
+[![gpl]](LICENSE)
 
-[ver]: https://img.shields.io/badge/version-idk%20lol-%2363B0B0?logo=github
+[ver]: https://img.shields.io/github/v/tag/microsounds/kagami?color=%2363B0B0&label=version&logo=github
+	"Click to see all releases to date."
 [gpl]: https://img.shields.io/badge/license-GPLv3+-%23997ECE
+	"GNU General Public License version 3 or later."
 
 # kagami — static microblog processor
 
-<img src="static/kagami.png" width="270px" align="right" alt="kagami">
-<!----✂---cut-here----->
+<img src="static/kagami.png" width="270" align="right" alt="kagami">
+<!----8<---cut-here----->
 
 This is a minimalist static HTML template processor and macro preprocessor
 written in POSIX shell, designed for low-frequency, low-effort Web 1.0-esque
