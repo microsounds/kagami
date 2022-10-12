@@ -128,7 +128,7 @@ an `*.htm` link.
 >_To suppress this behavior in finished webpages, you can mention or link to
 > literal `.md` documents using the `&period;` HTML entity code._
 
-# Dynamic RSS 2.0 Feed Generation
+# Dynamic RSS 2.0 Feeds
 A dynamically updated RSS 2.0 feed `rss.xml` will be generated along with your
 authored web pages at the root of the working directory if the optional macro
 `SITE_HOSTNAME` is defined at runtime.
@@ -149,7 +149,18 @@ RSS feeds are reproducible, `lastBuildDate` matches the `pubDate` of the most
 recent `item` found. This is to avoid the issue of dirtying a `git` worktree
 simply because the `lastBuildDate` value changed.
 
-# Embedded Table of Contents and Anchor Links
+## Notes on feed blurbs
+RSS feed item descriptions (blurbs) are truncated to the first 80 words for brevity.
+
+While old world web publishing wisdom would tell you that the entire article
+contents should be included within `<description>`, that defeats the purpose of
+even having a website.
+
+Since no modern RSS/newsreader applications expects this behavior anyway,
+`kagami` assumes that newsreader will offer to open feed items in the user's
+web browser for the full experience.
+
+# Table of Contents and Anchor Links
 When writing structured content, you can embed a dynamically generated table of
 contents with navigable anchor links anywhere in your markdown using local
 macro `{TOC}`.
